@@ -183,6 +183,11 @@
                 tracks.forEach(track => track.stop());  // Interrompe tutte le tracce dello stream
             }
             video.style.display = 'none';  // Nascondi il video
+            // Rimuovi il pulsante di acquisizione per evitare duplicati in futuro
+            const captureButton = document.getElementById('capture-btn');
+            if (captureButton) {
+                captureButton.remove();
+            }
         }
 
         // Funzione per gestire il caricamento del file e mostrare l'anteprima
@@ -199,6 +204,7 @@
                 var imgURL = URL.createObjectURL(file);
                 document.getElementById('preview-img').src = imgURL;
                 togglePreview(true);
+                stopWebcam(); // Disattiva la webcam se viene selezionato un file invece
             }
         }
 
