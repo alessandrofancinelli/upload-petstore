@@ -83,7 +83,7 @@
             border-radius: 10px;
         }
         video {
-            max-width: 90%;
+            max-width: 80%;
             height: auto;
             margin: 20px 0;
             border-radius: 10px;
@@ -163,6 +163,7 @@
         <input type="file" id="file-input-upload" accept="image/*">
         <video id="video" autoplay style="display: none;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
+        <button id="capture-photo" style="display: none; margin-top: 15px;">Scatta Foto dalla Webcam</button>
     </div>
 
     <div id="preview">
@@ -226,12 +227,11 @@
             const video = document.getElementById('video');
             document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento
             video.style.display = 'block';
+            document.getElementById('capture-photo').style.display = 'block'; // Mostra il pulsante di scatto
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function (stream) {
                     videoStream = stream;
                     video.srcObject = stream;
-                    // Mostra il pulsante per catturare la foto dopo che la webcam è pronta
-                    createCaptureButton();
                 })
                 .catch(function (error) {
                     console.error("Errore nell'accesso alla webcam:", error);
@@ -239,20 +239,8 @@
                 });
         }
 
-        // Crea il pulsante per scattare la foto se non esiste già
-        function createCaptureButton() {
-            if (!document.getElementById('capture-photo')) {
-                const snapButton = document.createElement('button');
-                snapButton.textContent = 'Scatta Foto dalla Webcam';
-                snapButton.id = 'capture-photo';
-                snapButton.style = "margin-top: 15px; padding: 10px 25px;";
-                snapButton.onclick = capturePhoto;
-                document.getElementById('photo-section').appendChild(snapButton);
-            }
-        }
-
         // Funzione per catturare la foto dalla webcam
-        function capturePhoto() {
+        document.getElementById('capture-photo').addEventListener('click', function () {
             const canvas = document.getElementById('canvas');
             const video = document.getElementById('video');
             canvas.width = video.videoWidth;
@@ -269,7 +257,7 @@
                 togglePreview(true);
                 stopWebcam();
             });
-        }
+        });
 
         // Funzione per interrompere la webcam e nascondere il flusso video
         function stopWebcam() {
@@ -279,6 +267,7 @@
                 tracks.forEach(track => track.stop());
             }
             video.style.display = 'none';
+            document.getElementById('capture-photo').style.display = 'none';
             document.getElementById('upload-btn').style.display = 'block'; // Mostra di nuovo il pulsante di caricamento
         }
 
