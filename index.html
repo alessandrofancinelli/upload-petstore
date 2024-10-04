@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scatta una Foto</title>
+    <title>Scatta una Foto o Carica un File</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@
             border: 2px solid #ccc;
             border-radius: 8px;
         }
-        button {
+        button, input[type="file"] {
             margin-top: 10px;
             padding: 10px 20px;
             font-size: 16px;
@@ -29,21 +29,27 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
+        button:hover, input[type="file"]:hover {
             background-color: #218838;
+        }
+        input[type="file"] {
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <h1>Scatta una Foto</h1>
-    <video id="video" width="300" height="200" autoplay></video>
+    <h1>Scatta una Foto o Carica un File</h1>
+    <video id="video" autoplay></video>
     <button id="snap">Scatta Foto</button>
-    <canvas id="canvas" width="300" height="200" style="display:none;"></canvas>
+    <button id="upload-btn">Carica un File</button>
+    <input type="file" id="file-input" accept="image/*">
+
+    <canvas id="canvas" style="display:none;"></canvas>
 
     <script>
         // Accesso alla fotocamera
-        navigator.mediaDevices.getUserMedia({ video: true })
+        navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 4096 }, height: { ideal: 2160 } } })
             .then(function (stream) {
                 var video = document.getElementById('video');
                 video.srcObject = stream;
@@ -55,12 +61,16 @@
 
         // Scatta foto e invia il file binario al webhook
         document.getElementById('snap').addEventListener('click', function () {
+            var video = document.getElementById('video');
             var canvas = document.getElementById('canvas');
             var context = canvas.getContext('2d');
-            var video = document.getElementById('video');
             
+            // Imposta la risoluzione del canvas per mantenere la risoluzione del video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
             // Disegna il video sul canvas
-            context.drawImage(video, 0, 0, 300, 200);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             // Converte il contenuto del canvas in un file binario (Blob)
             canvas.toBlob(function(blob) {
@@ -76,7 +86,30 @@
                 .then(response => response.text())
                 .then(data => console.log('Successo:', data))
                 .catch(error => console.error('Errore:', error));
-            }, 'image/png');  // Specifica il formato dell'immagine come PNG
+            }, 'image/png');
+        });
+
+        // Bottone per aprire il file input
+        document.getElementById('upload-btn').addEventListener('click', function () {
+            document.getElementById('file-input').click();
+        });
+
+        // Carica il file dal dispositivo e invialo al webhook
+        document.getElementById('file-input').addEventListener('change', function (event) {
+            var file = event.target.files[0];
+            if (file) {
+                var formData = new FormData();
+                formData.append('file', file, file.name);  // Aggiungi il file caricato
+
+                // Invia il file caricato al webhook
+                fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
+                    method: 'POST',
+                    body: formData  // Usa FormData per inviare il file binario
+                })
+                .then(response => response.text())
+                .then(data => console.log('Successo:', data))
+                .catch(error => console.error('Errore:', error));
+            }
         });
     </script>
 
