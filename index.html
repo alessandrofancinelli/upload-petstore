@@ -26,7 +26,7 @@
             max-height: 300px;
             margin-bottom: 15px;
         }
-        img {
+        img, video {
             margin-bottom: 15px;
             max-width: 100%;
             height: auto;
@@ -81,6 +81,7 @@
     <button id="upload-btn">Carica un File</button>
     <input type="file" id="file-input-snap" accept="image/*" capture="environment">
     <input type="file" id="file-input-upload" accept="image/*">
+    <video id="video" width="300" height="200" autoplay style="display: none;"></video>
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="preview">
@@ -100,6 +101,7 @@
     <script>
         let selectedFileBlob = null;
         let selectedFileName = '';
+        let videoStream = null;
 
         // Rileva se il dispositivo è mobile o desktop
         function isMobileDevice() {
@@ -112,8 +114,8 @@
                 // Per i dispositivi mobili, apri la fotocamera
                 document.getElementById('file-input-snap').click();
             } else {
-                // Per i desktop, apri l'opzione di caricamento file
-                alert("La fotocamera non è supportata su questo dispositivo. Usa 'Carica un File'.");
+                // Per i desktop, chiedi il permesso per utilizzare la webcam
+                startWebcam();
             }
         });
 
@@ -122,11 +124,55 @@
             document.getElementById('file-input-upload').click();
         });
 
-        // Carica il file dal dispositivo (sia dalla fotocamera che dalla galleria) e mostra l'anteprima
+        // Funzione per iniziare a usare la webcam
+        function startWebcam() {
+            const video = document.getElementById('video');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    videoStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';  // Mostra il video
+                    createCaptureButton();  // Crea il pulsante per catturare la foto
+                })
+                .catch(function (error) {
+                    console.error("Errore nell'accesso alla webcam:", error);
+                    alert("Non è possibile accedere alla webcam.");
+                });
+        }
+
+        // Crea il pulsante per scattare la foto
+        function createCaptureButton() {
+            const snapButton = document.createElement('button');
+            snapButton.textContent = 'Scatta Foto';
+            snapButton.style = "margin-top: 10px;";
+            snapButton.onclick = capturePhoto;
+            document.body.appendChild(snapButton);
+        }
+
+        // Funzione per catturare la foto dalla webcam
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const video = document.getElementById('video');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Converti il canvas in Blob e mostra l'anteprima
+            canvas.toBlob(function(blob) {
+                selectedFileBlob = blob;
+                selectedFileName = 'webcam-photo.png';  // Imposta un nome per il file
+
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+            });
+        }
+
+        // Funzione per gestire il caricamento del file e mostrare l'anteprima
         document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
         document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
 
-        // Funzione per gestire il caricamento del file e mostrare l'anteprima
         function handleFileSelect(event) {
             var file = event.target.files[0];
             if (file) {
