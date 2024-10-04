@@ -39,7 +39,7 @@
     <h1>Scatta una Foto</h1>
     <video id="video" width="300" height="200" autoplay></video>
     <button id="snap">Scatta Foto</button>
-    <canvas id="canvas" width="300" height="200"></canvas>
+    <canvas id="canvas" width="300" height="200" style="display:none;"></canvas>
 
     <script>
         // Accesso alla fotocamera
@@ -53,7 +53,7 @@
                 console.log("Errore nell'accesso alla fotocamera: " + err);
             });
 
-        // Scatta foto e invia al webhook
+        // Scatta foto e invia il file binario al webhook
         document.getElementById('snap').addEventListener('click', function () {
             var canvas = document.getElementById('canvas');
             var context = canvas.getContext('2d');
@@ -62,23 +62,21 @@
             // Disegna il video sul canvas
             context.drawImage(video, 0, 0, 300, 200);
 
-            // Converte l'immagine in formato base64
-            var dataURL = canvas.toDataURL('image/png');
+            // Converte il contenuto del canvas in un file binario (Blob)
+            canvas.toBlob(function(blob) {
+                // Prepara i dati per l'invio al webhook
+                var formData = new FormData();
+                formData.append('file', blob, 'immagine.png');  // Aggiungi il file blob con un nome file
 
-            // Rimuove l'intestazione "data:image/png;base64,"
-            var base64Image = dataURL.replace(/^data:image\/png;base64,/, '');
-
-            // Invia l'immagine al webhook
-            fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ image: base64Image }),  // Invia l'immagine come base64 senza intestazione
-            })
-            .then(response => response.text())  // Usa text() per gestire risposte non JSON
-            .then(data => console.log('Successo:', data))
-            .catch(error => console.error('Errore:', error));
+                // Invia il file binario al webhook
+                fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
+                    method: 'POST',
+                    body: formData  // Usa FormData per inviare il file binario
+                })
+                .then(response => response.text())
+                .then(data => console.log('Successo:', data))
+                .catch(error => console.error('Errore:', error));
+            }, 'image/png');  // Specifica il formato dell'immagine come PNG
         });
     </script>
 
