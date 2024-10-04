@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scatta una Foto o Carica un File</title>
     <style>
         body {
@@ -52,6 +51,10 @@
             font-size: 20px;
             color: #007bff;
         }
+        #error-message {
+            color: red;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -75,18 +78,47 @@
         <p>Immagine caricata!</p>
     </div>
 
+    <div id="error-message"></div>
+
     <script>
         let selectedFileBlob = null;
         let selectedFileName = '';
+        const TIME_LIMIT = 30 * 60 * 1000;  // Mezz'ora in millisecondi
+
+        // Controlla se l'utente è autorizzato a caricare una nuova immagine
+        function canUpload() {
+            const lastUploadTime = localStorage.getItem('lastUploadTime');
+            if (lastUploadTime) {
+                const currentTime = new Date().getTime();
+                const elapsedTime = currentTime - lastUploadTime;
+                if (elapsedTime < TIME_LIMIT) {
+                    const remainingTime = Math.ceil((TIME_LIMIT - elapsedTime) / 60000);
+                    document.getElementById('error-message').innerText = `Attendi almeno ${remainingTime} minuti prima di caricare un'altra immagine.`;
+                    return false;
+                }
+            }
+            document.getElementById('error-message').innerText = '';
+            return true;
+        }
+
+        // Salva l'orario dell'ultimo caricamento
+        function saveUploadTime() {
+            const currentTime = new Date().getTime();
+            localStorage.setItem('lastUploadTime', currentTime);
+        }
 
         // Apri la fotocamera del dispositivo usando input file con capture="environment"
         document.getElementById('snap').addEventListener('click', function () {
-            document.getElementById('file-input-snap').click();
+            if (canUpload()) {
+                document.getElementById('file-input-snap').click();
+            }
         });
 
         // Bottone per aprire il file input (carica un file dalla galleria)
         document.getElementById('upload-btn').addEventListener('click', function () {
-            document.getElementById('file-input-upload').click();
+            if (canUpload()) {
+                document.getElementById('file-input-upload').click();
+            }
         });
 
         // Carica il file dal dispositivo (sia dalla fotocamera che dalla galleria) e mostra l'anteprima
@@ -124,10 +156,12 @@
             .then(data => {
                 console.log('Successo:', data);
                 showCompletionMessage();  // Mostra il messaggio di caricamento completato
+                saveUploadTime();  // Salva l'orario dell'ultimo caricamento
             })
             .catch(error => {
                 console.error('Errore:', error);
                 alert("Errore nel caricamento dell'immagine. Riprova.");
+                togglePreview(false);
             });
         });
 
