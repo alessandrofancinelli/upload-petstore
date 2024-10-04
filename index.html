@@ -15,9 +15,10 @@
             margin: 0;
             background-color: #f0f0f0;
         }
-        video, canvas {
+        video, canvas, img {
             border: 2px solid #ccc;
             border-radius: 8px;
+            margin-bottom: 10px;
         }
         button, input[type="file"] {
             margin-top: 10px;
@@ -35,19 +36,32 @@
         input[type="file"] {
             display: none;
         }
+        #preview, #confirm-buttons {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Scatta una Foto o Carica un File</h1>
+    <h1 id="title">Scatta una Foto o Carica un File</h1>
     <video id="video" autoplay></video>
     <button id="snap">Scatta Foto</button>
     <button id="upload-btn">Carica un File</button>
     <input type="file" id="file-input" accept="image/*">
-
     <canvas id="canvas" style="display:none;"></canvas>
 
+    <div id="preview">
+        <img id="preview-img" alt="Anteprima Immagine">
+        <div id="confirm-buttons">
+            <button id="confirm-upload">Conferma</button>
+            <button id="discard-upload">Scarta</button>
+        </div>
+    </div>
+
     <script>
+        let selectedFileBlob = null;
+        let selectedFileName = '';
+
         // Accesso alla fotocamera
         navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 4096 }, height: { ideal: 2160 } } })
             .then(function (stream) {
@@ -59,12 +73,12 @@
                 console.log("Errore nell'accesso alla fotocamera: " + err);
             });
 
-        // Scatta foto e invia il file binario al webhook
+        // Scatta foto e mostra l'anteprima
         document.getElementById('snap').addEventListener('click', function () {
             var video = document.getElementById('video');
             var canvas = document.getElementById('canvas');
             var context = canvas.getContext('2d');
-            
+
             // Imposta la risoluzione del canvas per mantenere la risoluzione del video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -74,18 +88,13 @@
 
             // Converte il contenuto del canvas in un file binario (Blob)
             canvas.toBlob(function(blob) {
-                // Prepara i dati per l'invio al webhook
-                var formData = new FormData();
-                formData.append('file', blob, 'immagine.png');  // Aggiungi il file blob con un nome file
+                selectedFileBlob = blob;  // Memorizza il blob per l'eventuale conferma
+                selectedFileName = 'immagine.png';  // Imposta il nome del file
 
-                // Invia il file binario al webhook
-                fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
-                    method: 'POST',
-                    body: formData  // Usa FormData per inviare il file binario
-                })
-                .then(response => response.text())
-                .then(data => console.log('Successo:', data))
-                .catch(error => console.error('Errore:', error));
+                // Mostra l'anteprima dell'immagine
+                var imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
             }, 'image/png');
         });
 
@@ -94,23 +103,55 @@
             document.getElementById('file-input').click();
         });
 
-        // Carica il file dal dispositivo e invialo al webhook
+        // Carica il file dal dispositivo e mostra l'anteprima
         document.getElementById('file-input').addEventListener('change', function (event) {
             var file = event.target.files[0];
             if (file) {
-                var formData = new FormData();
-                formData.append('file', file, file.name);  // Aggiungi il file caricato
+                selectedFileBlob = file;  // Memorizza il file caricato
+                selectedFileName = file.name;  // Imposta il nome del file
 
-                // Invia il file caricato al webhook
-                fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
-                    method: 'POST',
-                    body: formData  // Usa FormData per inviare il file binario
-                })
-                .then(response => response.text())
-                .then(data => console.log('Successo:', data))
-                .catch(error => console.error('Errore:', error));
+                // Mostra l'anteprima dell'immagine
+                var imgURL = URL.createObjectURL(file);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
             }
         });
+
+        // Conferma il caricamento dell'immagine
+        document.getElementById('confirm-upload').addEventListener('click', function () {
+            var formData = new FormData();
+            formData.append('file', selectedFileBlob, selectedFileName);  // Aggiungi il file Blob
+
+            // Invia il file binario al webhook
+            fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
+                method: 'POST',
+                body: formData  // Usa FormData per inviare il file binario
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Successo:', data);
+                showCompletionMessage();  // Mostra il messaggio di caricamento completato
+            })
+            .catch(error => console.error('Errore:', error));
+        });
+
+        // Scarta l'immagine e ripristina la schermata iniziale
+        document.getElementById('discard-upload').addEventListener('click', function () {
+            togglePreview(false);  // Nascondi l'anteprima e ripristina la schermata iniziale
+        });
+
+        // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
+        function togglePreview(show) {
+            document.getElementById('video').style.display = show ? 'none' : 'block';
+            document.getElementById('snap').style.display = show ? 'none' : 'block';
+            document.getElementById('upload-btn').style.display = show ? 'none' : 'block';
+            document.getElementById('preview').style.display = show ? 'block' : 'none';
+        }
+
+        // Funzione per mostrare il messaggio di caricamento completato
+        function showCompletionMessage() {
+            document.body.innerHTML = '<h1>Caricamento Completato</h1>';
+        }
     </script>
 
 </body>
