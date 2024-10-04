@@ -15,7 +15,7 @@
             background-color: #f8f9fa;
         }
         #logo {
-            width: 200px;
+            width: 250px;
             margin-bottom: 20px;
         }
         img {
@@ -64,7 +64,7 @@
 <body>
 
     <!-- Logo -->
-    <img id="logo" src="logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+    <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
 
     <h1 id="title">Scatta una Foto o Carica un File</h1>
     <button id="snap">Scatta Foto</button>
@@ -90,42 +90,15 @@
     <script>
         let selectedFileBlob = null;
         let selectedFileName = '';
-        const TIME_LIMIT = 30 * 60 * 1000;  // Mezz'ora in millisecondi
-
-        // Controlla se l'utente è autorizzato a caricare una nuova immagine
-        function canUpload() {
-            const lastUploadTime = localStorage.getItem('lastUploadTime');
-            if (lastUploadTime) {
-                const currentTime = new Date().getTime();
-                const elapsedTime = currentTime - lastUploadTime;
-                if (elapsedTime < TIME_LIMIT) {
-                    const remainingTime = Math.ceil((TIME_LIMIT - elapsedTime) / 60000);
-                    document.getElementById('error-message').innerText = `Attendi almeno ${remainingTime} minuti prima di caricare un'altra immagine.`;
-                    return false;
-                }
-            }
-            document.getElementById('error-message').innerText = '';
-            return true;
-        }
-
-        // Salva l'orario dell'ultimo caricamento
-        function saveUploadTime() {
-            const currentTime = new Date().getTime();
-            localStorage.setItem('lastUploadTime', currentTime);
-        }
 
         // Apri la fotocamera del dispositivo usando input file con capture="environment"
         document.getElementById('snap').addEventListener('click', function () {
-            if (canUpload()) {
-                document.getElementById('file-input-snap').click();
-            }
+            document.getElementById('file-input-snap').click();
         });
 
         // Bottone per aprire il file input (carica un file dalla galleria)
         document.getElementById('upload-btn').addEventListener('click', function () {
-            if (canUpload()) {
-                document.getElementById('file-input-upload').click();
-            }
+            document.getElementById('file-input-upload').click();
         });
 
         // Carica il file dal dispositivo (sia dalla fotocamera che dalla galleria) e mostra l'anteprima
@@ -163,7 +136,6 @@
             .then(data => {
                 console.log('Successo:', data);
                 showCompletionMessage();  // Mostra il messaggio di caricamento completato
-                saveUploadTime();  // Salva l'orario dell'ultimo caricamento
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -188,10 +160,9 @@
         // Funzione per mostrare il messaggio di caricamento completato
         function showCompletionMessage() {
             document.body.innerHTML = `
-                <div style="text-align: center;">
-                    <img id="logo" src="logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                    <h1>Immagine Caricata!</h1>
-                </div>`;
+                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                <h1>Immagine Caricata!</h1>
+            `;
         }
     </script>
 
