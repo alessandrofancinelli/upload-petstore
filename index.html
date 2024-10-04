@@ -6,29 +6,34 @@
     <title>Scatta una Foto o Carica un File</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #f8f9fa;
         }
         video, canvas, img {
-            border: 2px solid #ccc;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        video {
+            display: none;
+            max-width: 100%;
         }
         button, input[type="file"] {
             margin-top: 10px;
-            padding: 10px 20px;
+            padding: 10px 25px;
             font-size: 16px;
             background-color: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover, input[type="file"]:hover {
             background-color: #218838;
@@ -36,7 +41,18 @@
         input[type="file"] {
             display: none;
         }
-        #video, #snap, #upload-btn, #preview, #confirm-buttons {
+        #preview, #confirm-buttons, #message {
+            display: none;
+        }
+        #preview {
+            text-align: center;
+        }
+        #confirm-buttons {
+            margin-top: 15px;
+        }
+        #loading-message {
+            font-size: 20px;
+            color: #007bff;
             display: none;
         }
     </style>
@@ -59,6 +75,10 @@
         </div>
     </div>
 
+    <div id="loading-message">
+        <p>Caricamento in corso...</p>
+    </div>
+
     <script>
         let selectedFileBlob = null;
         let selectedFileName = '';
@@ -79,6 +99,7 @@
                 })
                 .catch(function (err) {
                     console.log("Errore nell'accesso alla fotocamera: " + err);
+                    alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
                 });
         });
 
@@ -128,6 +149,9 @@
 
         // Conferma il caricamento dell'immagine
         document.getElementById('confirm-upload').addEventListener('click', function () {
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('loading-message').style.display = 'block';
+
             var formData = new FormData();
             formData.append('file', selectedFileBlob, selectedFileName);  // Aggiungi il file Blob
 
@@ -141,7 +165,10 @@
                 console.log('Successo:', data);
                 showCompletionMessage();  // Mostra il messaggio di caricamento completato
             })
-            .catch(error => console.error('Errore:', error));
+            .catch(error => {
+                console.error('Errore:', error);
+                alert("Errore nel caricamento dell'immagine. Riprova.");
+            });
         });
 
         // Scarta l'immagine e ripristina la schermata iniziale
