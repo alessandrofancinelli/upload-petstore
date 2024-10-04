@@ -160,7 +160,7 @@
         </div>
         <input type="file" id="file-input-snap" accept="image/*" capture="environment">
         <input type="file" id="file-input-upload" accept="image/*">
-        <video id="video" width="300" height="200" autoplay style="display: none;"></video>
+        <video id="video" autoplay style="display: none;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
@@ -206,8 +206,8 @@
         // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
         document.getElementById('snap').addEventListener('click', function (event) {
             event.preventDefault();
-            document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento durante lo scatto
             if (isMobileDevice()) {
+                document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento
                 document.getElementById('file-input-snap').click();
             } else {
                 startWebcam();
@@ -223,16 +223,50 @@
         // Funzione per iniziare a usare la webcam
         function startWebcam() {
             const video = document.getElementById('video');
+            document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento
+            video.style.display = 'block';
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function (stream) {
                     videoStream = stream;
                     video.srcObject = stream;
-                    video.style.display = 'block';
+                    createCaptureButton();
                 })
                 .catch(function (error) {
                     console.error("Errore nell'accesso alla webcam:", error);
                     alert("Non è possibile accedere alla webcam.");
                 });
+        }
+
+        // Crea il pulsante per scattare la foto se non esiste già
+        function createCaptureButton() {
+            if (!document.getElementById('capture-photo')) {
+                const snapButton = document.createElement('button');
+                snapButton.textContent = 'Scatta Foto dalla Webcam';
+                snapButton.id = 'capture-photo';
+                snapButton.style = "margin-top: 15px; padding: 10px 25px;";
+                snapButton.onclick = capturePhoto;
+                document.getElementById('photo-section').appendChild(snapButton);
+            }
+        }
+
+        // Funzione per catturare la foto dalla webcam
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const video = document.getElementById('video');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(function (blob) {
+                selectedFileBlob = blob;
+                selectedFileName = 'webcam-photo.png';
+
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            });
         }
 
         // Funzione per interrompere la webcam e nascondere il flusso video
