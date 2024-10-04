@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatta una Foto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        video, canvas {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Scatta una Foto</h1>
+    <video id="video" width="300" height="200" autoplay></video>
+    <button id="snap">Scatta Foto</button>
+    <canvas id="canvas" width="300" height="200"></canvas>
+
+    <script>
+        // Accesso alla fotocamera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                var video = document.getElementById('video');
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function (err) {
+                console.log("Errore nell'accesso alla fotocamera: " + err);
+            });
+
+        // Scatta foto e invia al webhook
+        document.getElementById('snap').addEventListener('click', function () {
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            var video = document.getElementById('video');
+            
+            // Disegna il video sul canvas
+            context.drawImage(video, 0, 0, 300, 200);
+
+            // Converte l'immagine in formato base64
+            var dataURL = canvas.toDataURL('image/png');
+
+            // Invia l'immagine al webhook
+            fetch('https://tuo-webhook-url.com', {  // Inserisci qui l'URL del tuo webhook
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: dataURL }),  // Invia l'immagine come base64
+            })
+            .then(response => response.json())
+            .then(data => console.log('Successo:', data))
+            .catch(error => console.error('Errore:', error));
+        });
+    </script>
+
+</body>
+</html>
