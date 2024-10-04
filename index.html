@@ -138,8 +138,14 @@
 
     <h1 id="title">Scatta una Foto o Carica un File</h1>
 
+    <!-- Sezione Scelta Opzioni Iniziali -->
+    <div id="initial-options" class="button-container">
+        <button id="take-photo-button">Scatta Foto</button>
+        <button id="upload-file-button">Carica un File</button>
+    </div>
+
     <!-- Modulo Dati Cliente -->
-    <form id="client-info-form">
+    <form id="client-info-form" style="display: none;">
         <label for="name">Nome:</label>
         <input type="text" id="name" name="name" required>
         
@@ -179,6 +185,17 @@
         let selectedFileName = '';
         let videoStream = null;
 
+        // Gestione della Sezione Iniziale
+        document.getElementById('take-photo-button').addEventListener('click', function() {
+            document.getElementById('initial-options').style.display = 'none';
+            document.getElementById('client-info-form').style.display = 'block';
+        });
+
+        document.getElementById('upload-file-button').addEventListener('click', function() {
+            document.getElementById('initial-options').style.display = 'none';
+            document.getElementById('client-info-form').style.display = 'block';
+        });
+
         // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function() {
             // Prende i valori del nome, email e controllo privacy
@@ -201,8 +218,8 @@
         function startWebcam() {
             const video = document.getElementById('video');
             video.style.display = 'block';
-            // Richiesta di accesso alla webcam con preferenze per il fronte-retro e priorità all'avvio rapido
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            // Richiesta di accesso alla webcam senza specificare la modalità fronte-retro per consentire l'apertura dell'app nativa
+            navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function (stream) {
                     // Salva lo stream video per poterlo fermare successivamente
                     videoStream = stream;
@@ -295,7 +312,7 @@
         document.getElementById('discard-upload').addEventListener('click', function (event) {
             event.preventDefault();
             togglePreview(false); // Nasconde l'anteprima e riporta alla schermata iniziale
-            document.getElementById('client-info-form').style.display = 'block'; // Mostra nuovamente il modulo di inserimento dati
+            document.getElementById('initial-options').style.display = 'block'; // Mostra nuovamente le opzioni iniziali
             document.getElementById('photo-section').style.display = 'none'; // Nasconde la sezione foto
         });
 
