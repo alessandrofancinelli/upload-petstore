@@ -85,7 +85,7 @@
         video {
             max-width: 100%;
             height: auto;
-            margin-bottom: 20px;
+            margin: 20px 0;
             border-radius: 10px;
         }
         button, input[type="file"] {
@@ -154,7 +154,7 @@
 
     <!-- Sezione Foto/Caricamento -->
     <div id="photo-section" style="display: none;">
-        <div class="button-container">
+        <div class="button-container" id="photo-buttons">
             <button id="snap">Scatta Foto</button>
             <button id="upload-btn">Carica un File</button>
         </div>
@@ -206,6 +206,7 @@
         // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
         document.getElementById('snap').addEventListener('click', function (event) {
             event.preventDefault();
+            document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento durante lo scatto
             if (isMobileDevice()) {
                 document.getElementById('file-input-snap').click();
             } else {
@@ -242,6 +243,7 @@
                 tracks.forEach(track => track.stop());
             }
             video.style.display = 'none';
+            document.getElementById('upload-btn').style.display = 'block'; // Mostra di nuovo il pulsante di caricamento
         }
 
         // Funzione per gestire il caricamento del file e mostrare l'anteprima
