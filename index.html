@@ -15,14 +15,12 @@
             margin: 0;
             background-color: #f8f9fa;
         }
-        video, img {
+        img {
             border-radius: 8px;
             margin-bottom: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        video {
-            display: none;
-            max-width: 100%;
+            max-width: 300px;
+            max-height: 300px;
         }
         button, input[type="file"] {
             margin-top: 10px;
@@ -50,10 +48,6 @@
         #confirm-buttons {
             margin-top: 15px;
         }
-        #preview-img {
-            max-width: 300px;
-            max-height: 300px;
-        }
         #loading-message {
             font-size: 20px;
             color: #007bff;
@@ -65,8 +59,7 @@
     <h1 id="title">Scatta una Foto o Carica un File</h1>
     <button id="snap">Scatta Foto</button>
     <button id="upload-btn">Carica un File</button>
-    <input type="file" id="file-input" accept="image/*">
-    <video id="video" autoplay></video>
+    <input type="file" id="file-input" accept="image/*" capture="environment">
     <canvas id="canvas" style="display:none;"></canvas>
 
     <div id="preview">
@@ -85,48 +78,9 @@
         let selectedFileBlob = null;
         let selectedFileName = '';
 
-        // Accesso alla fotocamera e mostra il video
+        // Apri la fotocamera del dispositivo usando input file
         document.getElementById('snap').addEventListener('click', function () {
-            navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 4096 }, height: { ideal: 2160 } } })
-                .then(function (stream) {
-                    var video = document.getElementById('video');
-                    video.srcObject = stream;
-                    video.play();
-
-                    // Mostra il video e il pulsante per scattare la foto
-                    document.getElementById('video').style.display = 'block';
-                    document.getElementById('snap').style.display = 'none';
-                    document.getElementById('upload-btn').style.display = 'none';
-                })
-                .catch(function (err) {
-                    console.log("Errore nell'accesso alla fotocamera: " + err);
-                    alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
-                });
-        });
-
-        // Scatta foto e mostra l'anteprima
-        document.getElementById('video').addEventListener('click', function () {
-            var video = document.getElementById('video');
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
-
-            // Imposta la risoluzione del canvas per mantenere la risoluzione del video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Disegna il video sul canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Converte il contenuto del canvas in un file binario (Blob)
-            canvas.toBlob(function (blob) {
-                selectedFileBlob = blob;  // Memorizza il blob per l'eventuale conferma
-                selectedFileName = 'immagine.png';  // Imposta il nome del file
-
-                // Mostra l'anteprima dell'immagine
-                var imgURL = URL.createObjectURL(blob);
-                document.getElementById('preview-img').src = imgURL;
-                togglePreview(true);
-            }, 'image/png');
+            document.getElementById('file-input').click();
         });
 
         // Bottone per aprire il file input
@@ -179,7 +133,6 @@
 
         // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
         function togglePreview(show) {
-            document.getElementById('video').style.display = show ? 'none' : 'none';
             document.getElementById('snap').style.display = show ? 'none' : 'block';
             document.getElementById('upload-btn').style.display = show ? 'none' : 'block';
             document.getElementById('preview').style.display = show ? 'block' : 'none';
