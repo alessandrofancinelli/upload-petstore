@@ -39,7 +39,7 @@
         input[type="file"] {
             display: none;
         }
-        #preview, #confirm-buttons, #loading-message {
+        #preview, #loading-message {
             display: none;
         }
         #preview {
@@ -136,6 +136,7 @@
             document.getElementById('snap').style.display = show ? 'none' : 'block';
             document.getElementById('upload-btn').style.display = show ? 'none' : 'block';
             document.getElementById('preview').style.display = show ? 'block' : 'none';
+            document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
         }
 
         // Funzione per mostrare il messaggio di caricamento completato
