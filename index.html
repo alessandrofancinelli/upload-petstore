@@ -65,13 +65,16 @@
             // Converte l'immagine in formato base64
             var dataURL = canvas.toDataURL('image/png');
 
+            // Rimuove l'intestazione "data:image/png;base64,"
+            var base64Image = dataURL.replace(/^data:image\/png;base64,/, '');
+
             // Invia l'immagine al webhook
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {  // Inserisci qui l'URL del tuo webhook
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ image: dataURL }),  // Invia l'immagine come base64
+                body: JSON.stringify({ image: base64Image }),  // Invia l'immagine come base64 senza intestazione
             })
             .then(response => response.text())  // Usa text() per gestire risposte non JSON
             .then(data => console.log('Successo:', data))
