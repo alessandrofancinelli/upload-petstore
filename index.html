@@ -140,13 +140,16 @@
                 });
         }
 
-        // Crea il pulsante per scattare la foto
+        // Crea il pulsante per scattare la foto (se non esiste già)
         function createCaptureButton() {
-            const snapButton = document.createElement('button');
-            snapButton.textContent = 'Scatta Foto';
-            snapButton.style = "margin-top: 10px;";
-            snapButton.onclick = capturePhoto;
-            document.body.appendChild(snapButton);
+            if (!document.getElementById('capture-btn')) {
+                const snapButton = document.createElement('button');
+                snapButton.textContent = 'Scatta Foto';
+                snapButton.id = 'capture-btn';
+                snapButton.style = "margin-top: 10px;";
+                snapButton.onclick = capturePhoto;
+                document.body.appendChild(snapButton);
+            }
         }
 
         // Funzione per catturare la foto dalla webcam
@@ -215,17 +218,20 @@
             .then(response => response.text())
             .then(data => {
                 console.log('Successo:', data);
+                stopWebcam(); // Assicurati di disattivare la webcam
                 showCompletionMessage();  // Mostra il messaggio di caricamento completato
             })
             .catch(error => {
                 console.error('Errore:', error);
                 alert("Errore nel caricamento dell'immagine. Riprova.");
+                stopWebcam(); // Assicurati di disattivare la webcam
                 togglePreview(false);
             });
         });
 
         // Scarta l'immagine e ripristina la schermata iniziale
         document.getElementById('discard-upload').addEventListener('click', function () {
+            stopWebcam(); // Disattiva la webcam in caso di scarto
             togglePreview(false);  // Nascondi l'anteprima e ripristina la schermata iniziale
         });
 
