@@ -14,6 +14,10 @@
             margin: 0;
             background-color: #f8f9fa;
         }
+        #logo {
+            width: 200px;
+            margin-bottom: 20px;
+        }
         img {
             border-radius: 8px;
             margin-bottom: 15px;
@@ -25,7 +29,7 @@
             margin-top: 10px;
             padding: 10px 25px;
             font-size: 16px;
-            background-color: #28a745;
+            background-color: #d70000; /* Rosso dal logo */
             color: white;
             border: none;
             border-radius: 5px;
@@ -33,7 +37,7 @@
             transition: background-color 0.3s ease;
         }
         button:hover, input[type="file"]:hover {
-            background-color: #218838;
+            background-color: #b00000; /* Colore più scuro per effetto hover */
         }
         input[type="file"] {
             display: none;
@@ -59,6 +63,9 @@
 </head>
 <body>
 
+    <!-- Logo -->
+    <img id="logo" src="logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+
     <h1 id="title">Scatta una Foto o Carica un File</h1>
     <button id="snap">Scatta Foto</button>
     <button id="upload-btn">Carica un File</button>
@@ -83,7 +90,7 @@
     <script>
         let selectedFileBlob = null;
         let selectedFileName = '';
-        const TIME_LIMIT = 30 * 60 * 1;  // Mezz'ora in millisecondi
+        const TIME_LIMIT = 30 * 60 * 1000;  // Mezz'ora in millisecondi
 
         // Controlla se l'utente è autorizzato a caricare una nuova immagine
         function canUpload() {
@@ -180,7 +187,11 @@
 
         // Funzione per mostrare il messaggio di caricamento completato
         function showCompletionMessage() {
-            document.body.innerHTML = '<h1>Immagine Caricata!</h1>';
+            document.body.innerHTML = `
+                <div style="text-align: center;">
+                    <img id="logo" src="logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                    <h1>Immagine Caricata!</h1>
+                </div>`;
         }
     </script>
 
