@@ -83,7 +83,7 @@
             border-radius: 10px;
         }
         video {
-            max-width: 80%;
+            max-width: 50%;
             height: auto;
             margin: 20px 0;
             border-radius: 10px;
@@ -155,15 +155,9 @@
 
     <!-- Sezione Foto/Caricamento -->
     <div id="photo-section" style="display: none;">
-        <div class="button-container" id="photo-buttons">
-            <button id="snap">Scatta Foto</button>
-            <button id="upload-btn">Carica un File</button>
-        </div>
-        <input type="file" id="file-input-snap" accept="image/*" capture="environment">
-        <input type="file" id="file-input-upload" accept="image/*">
         <video id="video" autoplay style="display: none;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
-        <button id="capture-photo" style="display: none; margin-top: 15px;">Scatta Foto dalla Webcam</button>
+        <button id="capture-photo" style="margin-top: 15px;">Scatta Foto</button>
     </div>
 
     <div id="preview">
@@ -195,39 +189,16 @@
                 // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
                 document.getElementById('photo-section').style.display = 'block';
+                startWebcam();
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
             }
         });
 
-        // Rileva se il dispositivo è mobile o desktop
-        function isMobileDevice() {
-            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
-        }
-
-        // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
-        document.getElementById('snap').addEventListener('click', function (event) {
-            event.preventDefault();
-            if (isMobileDevice()) {
-                document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento
-                document.getElementById('file-input-snap').click();
-            } else {
-                startWebcam();
-            }
-        });
-
-        // Bottone per aprire il file input (carica un file dalla galleria)
-        document.getElementById('upload-btn').addEventListener('click', function (event) {
-            event.preventDefault();
-            document.getElementById('file-input-upload').click();
-        });
-
         // Funzione per iniziare a usare la webcam
         function startWebcam() {
             const video = document.getElementById('video');
-            document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento
             video.style.display = 'block';
-            document.getElementById('capture-photo').style.display = 'block'; // Mostra il pulsante di scatto
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function (stream) {
                     videoStream = stream;
@@ -267,14 +238,9 @@
                 tracks.forEach(track => track.stop());
             }
             video.style.display = 'none';
-            document.getElementById('capture-photo').style.display = 'none';
-            document.getElementById('upload-btn').style.display = 'block'; // Mostra di nuovo il pulsante di caricamento
         }
 
         // Funzione per gestire il caricamento del file e mostrare l'anteprima
-        document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
-        document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
-
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
