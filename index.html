@@ -101,9 +101,20 @@
         let selectedFileBlob = null;
         let selectedFileName = '';
 
-        // Apri la fotocamera del dispositivo usando input file con capture="environment"
+        // Rileva se il dispositivo è mobile o desktop
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
         document.getElementById('snap').addEventListener('click', function () {
-            document.getElementById('file-input-snap').click();
+            if (isMobileDevice()) {
+                // Per i dispositivi mobili, apri la fotocamera
+                document.getElementById('file-input-snap').click();
+            } else {
+                // Per i desktop, apri l'opzione di caricamento file
+                alert("La fotocamera non è supportata su questo dispositivo. Usa 'Carica un File'.");
+            }
         });
 
         // Bottone per aprire il file input (carica un file dalla galleria)
