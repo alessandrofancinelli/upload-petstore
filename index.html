@@ -21,7 +21,7 @@
             box-sizing: border-box;
         }
         #logo {
-            width: 150px;
+            width: 150px; 
             height: auto;
             margin-bottom: 20px;
         }
@@ -83,11 +83,10 @@
             border-radius: 10px;
         }
         video {
-            max-width: 50%;
+            max-width: 100%;
             height: auto;
             margin: 20px 0;
             border-radius: 10px;
-            border: 2px solid #d70000;
         }
         button, input[type="file"] {
             padding: 10px 25px;
@@ -138,14 +137,8 @@
 
     <h1 id="title">Scatta una Foto o Carica un File</h1>
 
-    <!-- Sezione Scelta Opzioni Iniziali -->
-    <div id="initial-options" class="button-container">
-        <button id="take-photo-button">Scatta Foto</button>
-        <button id="upload-file-button">Carica un File</button>
-    </div>
-
     <!-- Modulo Dati Cliente -->
-    <form id="client-info-form" style="display: none;">
+    <form id="client-info-form">
         <label for="name">Nome:</label>
         <input type="text" id="name" name="name" required>
         
@@ -161,9 +154,14 @@
 
     <!-- Sezione Foto/Caricamento -->
     <div id="photo-section" style="display: none;">
-        <video id="video" autoplay playsinline style="display: none;"></video>
+        <div class="button-container" id="photo-buttons">
+            <button id="snap">Scatta Foto</button>
+            <button id="upload-btn">Carica un File</button>
+        </div>
+        <input type="file" id="file-input-snap" accept="image/*" capture="environment">
+        <input type="file" id="file-input-upload" accept="image/*">
+        <video id="video" width="300" height="200" autoplay style="display: none;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
-        <button id="capture-photo" style="margin-top: 15px;">Scatta Foto</button>
     </div>
 
     <div id="preview">
@@ -185,45 +183,51 @@
         let selectedFileName = '';
         let videoStream = null;
 
-        // Gestione della Sezione Iniziale
-        document.getElementById('take-photo-button').addEventListener('click', function() {
-            document.getElementById('initial-options').style.display = 'none';
-            document.getElementById('client-info-form').style.display = 'block';
-        });
-
-        document.getElementById('upload-file-button').addEventListener('click', function() {
-            document.getElementById('initial-options').style.display = 'none';
-            document.getElementById('client-info-form').style.display = 'block';
-        });
-
         // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function() {
-            // Prende i valori del nome, email e controllo privacy
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const privacyChecked = document.getElementById('privacy-check').checked;
 
-            // Verifica che tutti i campi siano compilati
             if (name && email && privacyChecked) {
-                // Nasconde il modulo e mostra la sezione per foto/caricamento
+                // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
                 document.getElementById('photo-section').style.display = 'block';
-                startWebcam(); // Avvia la webcam
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
             }
         });
 
+        // Rileva se il dispositivo è mobile o desktop
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
+        document.getElementById('snap').addEventListener('click', function (event) {
+            event.preventDefault();
+            document.getElementById('upload-btn').style.display = 'none'; // Nasconde il pulsante di caricamento durante lo scatto
+            if (isMobileDevice()) {
+                document.getElementById('file-input-snap').click();
+            } else {
+                startWebcam();
+            }
+        });
+
+        // Bottone per aprire il file input (carica un file dalla galleria)
+        document.getElementById('upload-btn').addEventListener('click', function (event) {
+            event.preventDefault();
+            document.getElementById('file-input-upload').click();
+        });
+
         // Funzione per iniziare a usare la webcam
         function startWebcam() {
             const video = document.getElementById('video');
-            video.style.display = 'block';
-            // Richiesta di accesso alla webcam senza specificare la modalità fronte-retro per consentire l'apertura dell'app nativa
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(function (stream) {
-                    // Salva lo stream video per poterlo fermare successivamente
                     videoStream = stream;
                     video.srcObject = stream;
+                    video.style.display = 'block';
                 })
                 .catch(function (error) {
                     console.error("Errore nell'accesso alla webcam:", error);
@@ -231,67 +235,43 @@
                 });
         }
 
-        // Funzione per catturare la foto dalla webcam
-        document.getElementById('capture-photo').addEventListener('click', function () {
-            const canvas = document.getElementById('canvas');
-            const video = document.getElementById('video');
-            // Imposta la dimensione del canvas in base alla risoluzione del video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            // Disegna il frame del video sul canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Converte il canvas in un Blob per poterlo caricare successivamente
-            canvas.toBlob(function (blob) {
-                selectedFileBlob = blob;
-                selectedFileName = 'webcam-photo.png';
-
-                // Mostra l'anteprima dell'immagine catturata
-                const imgURL = URL.createObjectURL(blob);
-                document.getElementById('preview-img').src = imgURL;
-                togglePreview(true);
-                stopWebcam(); // Ferma la webcam
-            });
-        });
-
         // Funzione per interrompere la webcam e nascondere il flusso video
         function stopWebcam() {
             const video = document.getElementById('video');
             if (videoStream) {
-                // Ferma tutti i track dello stream video
                 const tracks = videoStream.getTracks();
                 tracks.forEach(track => track.stop());
             }
             video.style.display = 'none';
+            document.getElementById('upload-btn').style.display = 'block'; // Mostra di nuovo il pulsante di caricamento
         }
 
         // Funzione per gestire il caricamento del file e mostrare l'anteprima
+        document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
+        document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
+
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
                 selectedFileBlob = file;
                 selectedFileName = file.name;
 
-                // Mostra l'anteprima dell'immagine selezionata
                 const imgURL = URL.createObjectURL(file);
                 document.getElementById('preview-img').src = imgURL;
                 togglePreview(true);
-                stopWebcam(); // Ferma la webcam se attiva
+                stopWebcam();
             }
         }
 
         // Conferma il caricamento dell'immagine
         document.getElementById('confirm-upload').addEventListener('click', function (event) {
             event.preventDefault();
-            // Nasconde l'anteprima e mostra il messaggio di caricamento
             document.getElementById('preview').style.display = 'none';
             document.getElementById('loading-message').style.display = 'block';
 
             const formData = new FormData();
             formData.append('file', selectedFileBlob, selectedFileName);
 
-            // Effettua una richiesta POST per caricare l'immagine
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
                 body: formData
@@ -299,33 +279,29 @@
             .then(response => response.text())
             .then(data => {
                 console.log('Successo:', data);
-                showCompletionMessage(); // Mostra il messaggio di caricamento completato
+                showCompletionMessage();
             })
             .catch(error => {
                 console.error('Errore:', error);
                 alert("Errore nel caricamento dell'immagine. Riprova.");
-                togglePreview(false); // Mostra nuovamente l'anteprima se c'è un errore
+                togglePreview(false);
             });
         });
 
         // Scarta l'immagine e ripristina la schermata iniziale
         document.getElementById('discard-upload').addEventListener('click', function (event) {
             event.preventDefault();
-            togglePreview(false); // Nasconde l'anteprima e riporta alla schermata iniziale
-            document.getElementById('initial-options').style.display = 'block'; // Mostra nuovamente le opzioni iniziali
-            document.getElementById('photo-section').style.display = 'none'; // Nasconde la sezione foto
+            togglePreview(false);
         });
 
         // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
         function togglePreview(show) {
-            // Mostra o nasconde la sezione foto e l'anteprima
             document.getElementById('photo-section').style.display = show ? 'none' : 'block';
             document.getElementById('preview').style.display = show ? 'block' : 'none';
         }
 
         // Funzione per mostrare il messaggio di caricamento completato
         function showCompletionMessage() {
-            // Sostituisce il contenuto del body con il messaggio di conferma
             document.body.innerHTML = `
                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
                 <h1>Immagine Caricata!</h1>
