@@ -21,7 +21,7 @@
             box-sizing: border-box;
         }
         #logo {
-            width: 150px; /* Ridotta la dimensione del logo */
+            width: 150px; 
             height: auto;
             margin-bottom: 20px;
         }
@@ -54,7 +54,7 @@
             max-width: 300px;
         }
         button:hover, input[type="file"]:hover {
-            background-color: #b00000; /* Colore più scuro per effetto hover */
+            background-color: #b00000;
         }
         input[type="file"] {
             display: none;
@@ -110,46 +110,161 @@
     <script src="app.js"></script>
 
     <script>
-        // Registra il service worker per abilitare le funzionalità PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-                    console.log('Service Worker registrato con successo:', registration);
-                }).catch(function(err) {
-                    console.log('Registrazione del Service Worker fallita:', err);
+        let selectedFileBlob = null;
+        let selectedFileName = '';
+        let videoStream = null;
+
+        // Rileva se il dispositivo è mobile o desktop
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
+        document.getElementById('snap').addEventListener('click', function (event) {
+            event.preventDefault();
+            if (isMobileDevice()) {
+                // Per i dispositivi mobili, apri la fotocamera
+                document.getElementById('file-input-snap').click();
+            } else {
+                // Per i desktop, chiedi il permesso per utilizzare la webcam
+                startWebcam();
+            }
+        });
+
+        // Bottone per aprire il file input (carica un file dalla galleria)
+        document.getElementById('upload-btn').addEventListener('click', function (event) {
+            event.preventDefault();
+            document.getElementById('file-input-upload').click();
+        });
+
+        // Funzione per iniziare a usare la webcam
+        function startWebcam() {
+            const video = document.getElementById('video');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    videoStream = stream;
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    createCaptureButton();
+                })
+                .catch(function (error) {
+                    console.error("Errore nell'accesso alla webcam:", error);
+                    alert("Non è possibile accedere alla webcam.");
                 });
+        }
+
+        // Crea il pulsante per scattare la foto (se non esiste già)
+        function createCaptureButton() {
+            if (!document.getElementById('capture-btn')) {
+                const snapButton = document.createElement('button');
+                snapButton.textContent = 'Scatta Foto';
+                snapButton.id = 'capture-btn';
+                snapButton.style = "margin-top: 10px;";
+                snapButton.onclick = capturePhoto;
+                document.body.appendChild(snapButton);
+            }
+        }
+
+        // Funzione per catturare la foto dalla webcam
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const video = document.getElementById('video');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(function (blob) {
+                selectedFileBlob = blob;
+                selectedFileName = 'webcam-photo.png';
+
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
             });
         }
 
-        // Gestisce il prompt di installazione della PWA
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Previene che il prompt venga mostrato immediatamente
-            e.preventDefault();
-            deferredPrompt = e;
+        // Funzione per interrompere la webcam e nascondere il flusso video
+        function stopWebcam() {
+            const video = document.getElementById('video');
+            if (videoStream) {
+                const tracks = videoStream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            video.style.display = 'none';
+            const captureButton = document.getElementById('capture-btn');
+            if (captureButton) {
+                captureButton.remove();
+            }
+        }
 
-            // Mostra il pulsante "Installa l'app"
-            const installButton = document.createElement('button');
-            installButton.textContent = "Installa l'app";
-            installButton.id = "install-button";
-            installButton.style = "margin-top: 20px; padding: 10px 20px; font-size: 16px;";
-            document.body.appendChild(installButton);
+        // Funzione per gestire il caricamento del file e mostrare l'anteprima
+        document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
+        document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
 
-            installButton.addEventListener('click', () => {
-                // Mostra il prompt di installazione
-                deferredPrompt.prompt();
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFileBlob = file;
+                selectedFileName = file.name;
 
-                // Verifica la scelta dell'utente
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Utente ha accettato l\'installazione');
-                    } else {
-                        console.log('Utente ha rifiutato l\'installazione');
-                    }
-                    deferredPrompt = null;
-                });
+                const imgURL = URL.createObjectURL(file);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            }
+        }
+
+        // Conferma il caricamento dell'immagine
+        document.getElementById('confirm-upload').addEventListener('click', function (event) {
+            event.preventDefault();
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('loading-message').style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', selectedFileBlob, selectedFileName);
+
+            fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Successo:', data);
+                stopWebcam();
+                showCompletionMessage();
+            })
+            .catch(error => {
+                console.error('Errore:', error);
+                alert("Errore nel caricamento dell'immagine. Riprova.");
+                stopWebcam();
+                togglePreview(false);
             });
         });
+
+        // Scarta l'immagine e ripristina la schermata iniziale
+        document.getElementById('discard-upload').addEventListener('click', function (event) {
+            event.preventDefault();
+            stopWebcam();
+            togglePreview(false);
+        });
+
+        // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
+        function togglePreview(show) {
+            document.getElementById('snap').style.display = show ? 'none' : 'block';
+            document.getElementById('upload-btn').style.display = show ? 'none' : 'block';
+            document.getElementById('preview').style.display = show ? 'block' : 'none';
+            document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
+        }
+
+        // Funzione per mostrare il messaggio di caricamento completato
+        function showCompletionMessage() {
+            document.body.innerHTML = `
+                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                <h1>Immagine Caricata!</h1>
+            `;
+        }
     </script>
 
 </body>
