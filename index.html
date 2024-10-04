@@ -36,7 +36,7 @@
         input[type="file"] {
             display: none;
         }
-        #preview, #confirm-buttons {
+        #video, #snap, #upload-btn, #preview, #confirm-buttons {
             display: none;
         }
     </style>
@@ -44,6 +44,7 @@
 <body>
 
     <h1 id="title">Scatta una Foto o Carica un File</h1>
+    <button id="start-camera">Avvia Fotocamera</button>
     <video id="video" autoplay></video>
     <button id="snap">Scatta Foto</button>
     <button id="upload-btn">Carica un File</button>
@@ -62,16 +63,24 @@
         let selectedFileBlob = null;
         let selectedFileName = '';
 
-        // Accesso alla fotocamera
-        navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 4096 }, height: { ideal: 2160 } } })
-            .then(function (stream) {
-                var video = document.getElementById('video');
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(function (err) {
-                console.log("Errore nell'accesso alla fotocamera: " + err);
-            });
+        // Funzione per avviare la fotocamera quando l'utente clicca su "Avvia Fotocamera"
+        document.getElementById('start-camera').addEventListener('click', function () {
+            navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 4096 }, height: { ideal: 2160 } } })
+                .then(function (stream) {
+                    var video = document.getElementById('video');
+                    video.srcObject = stream;
+                    video.play();
+
+                    // Mostra i controlli della fotocamera
+                    document.getElementById('video').style.display = 'block';
+                    document.getElementById('snap').style.display = 'block';
+                    document.getElementById('upload-btn').style.display = 'block';
+                    document.getElementById('start-camera').style.display = 'none';  // Nascondi il pulsante per avviare la fotocamera
+                })
+                .catch(function (err) {
+                    console.log("Errore nell'accesso alla fotocamera: " + err);
+                });
+        });
 
         // Scatta foto e mostra l'anteprima
         document.getElementById('snap').addEventListener('click', function () {
