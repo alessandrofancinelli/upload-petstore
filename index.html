@@ -166,7 +166,20 @@
                 const imgURL = URL.createObjectURL(blob);
                 document.getElementById('preview-img').src = imgURL;
                 togglePreview(true);
+
+                // Disattiva la webcam e nascondi il video
+                stopWebcam();
             });
+        }
+
+        // Funzione per interrompere la webcam e nascondere il flusso video
+        function stopWebcam() {
+            const video = document.getElementById('video');
+            if (videoStream) {
+                const tracks = videoStream.getTracks();
+                tracks.forEach(track => track.stop());  // Interrompe tutte le tracce dello stream
+            }
+            video.style.display = 'none';  // Nascondi il video
         }
 
         // Funzione per gestire il caricamento del file e mostrare l'anteprima
