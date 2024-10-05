@@ -1,19 +1,18 @@
 {
-  "name": "VisioSpot Web App",
-  "short_name": "VisioSpot",
-  "description": "Un'applicazione per scattare foto o caricare file.",
-  "start_url": "./index.html",
+  "name": "VisioSpot",
+  "short_name": "V",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#d70000",
   "icons": [
     {
-      "src": "./logo_marchioREG_2022_grigio.png",
+      "src": "v-icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./logo_marchioREG_2022_grigio.png",
+      "src": "v-icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
