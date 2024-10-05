@@ -133,9 +133,6 @@
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
 
-        <label for="Numero di telefono">Numero di telefono:</label>
-        <input type="Numero di telefono" id="Numero di telefono" name="Numero di telefono" required>
-
         <label for="privacy-check">
             <input type="checkbox" id="privacy-check" required> Accetto la privacy policy
         </label>
@@ -178,7 +175,6 @@
         document.getElementById('submit-info').addEventListener('click', function() {
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
-            const email = document.getElementById('Numero di telefono').value;
             const privacyChecked = document.getElementById('privacy-check').checked;
 
             if (name && email && privacyChecked) {
