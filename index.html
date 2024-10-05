@@ -6,6 +6,7 @@
     <title>Scatta una Foto o Carica un File</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="v-icon.png">
     <meta name="theme-color" content="#d70000">
     <style>
         body {
@@ -199,6 +200,9 @@
             } else {
                 // Per i desktop, chiedi il permesso per utilizzare la webcam
                 startWebcam();
+                // Nascondi i pulsanti di caricamento e lascia solo l'anteprima della webcam e il pulsante per scattare la foto
+                document.getElementById('snap').style.display = 'none';
+                document.getElementById('upload-btn').style.display = 'none';
             }
         });
 
@@ -232,7 +236,7 @@
                 snapButton.id = 'capture-btn';
                 snapButton.style = "margin-top: 10px;";
                 snapButton.onclick = capturePhoto;
-                document.body.appendChild(snapButton);
+                document.getElementById('photo-section').appendChild(snapButton);
             }
         }
 
