@@ -358,14 +358,15 @@
                     installPromptEvent.userChoice.then((choiceResult) => {
                         if (choiceResult.outcome === 'accepted') {
                             console.log('User accepted the install prompt');
+                            installButton.remove();
                         } else {
                             console.log('User dismissed the install prompt');
                         }
                         installPromptEvent = null;
-                        installButton.remove(); // Rimuovi il pulsante dopo l'interazione
                     });
                 };
                 document.body.appendChild(installButton);
+            }
                 installPromptEvent = null;
             }
         });
