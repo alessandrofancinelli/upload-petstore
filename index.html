@@ -251,6 +251,7 @@
             
 
             canvas.toBlob(function (pngBlob) {
+                // Converte l'immagine in formato PNG RGBA {
                 selectedFileBlob = pngBlob;
                 selectedFileName = 'webcam-photo-rgba.png';
 
@@ -299,7 +300,7 @@
             document.getElementById('loading-message').style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', selectedFileBlob);
+            formData.append('file', selectedFileBlob, selectedFileName.replace(/\.[^/.]+$/, '.png'));
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
