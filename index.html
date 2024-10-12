@@ -248,10 +248,7 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            
-
             canvas.toBlob(function (pngBlob) {
-                // Converte l'immagine in formato PNG RGBA {
                 selectedFileBlob = pngBlob;
                 selectedFileName = 'webcam-photo-rgba.png';
 
@@ -283,10 +280,10 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
                 const img = new Image();
                 img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const context = canvas.getContext('2d');
                     canvas.width = img.width;
                     canvas.height = img.height;
                     context.drawImage(img, 0, 0);
@@ -302,7 +299,6 @@
                 img.src = URL.createObjectURL(file);
             }
         }
-        }
 
         // Conferma il caricamento dell'immagine
         document.getElementById('confirm-upload').addEventListener('click', function (event) {
@@ -311,7 +307,7 @@
             document.getElementById('loading-message').style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', selectedFileBlob, selectedFileName.replace(/\.[^/.]+$/, '.png'));
+            formData.append('file', selectedFileBlob);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
