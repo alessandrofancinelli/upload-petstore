@@ -248,16 +248,7 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            canvas.toBlob(function (blob) {
-            const rgbaCanvas = document.createElement('canvas');
-            rgbaCanvas.width = canvas.width;
-            rgbaCanvas.height = canvas.height;
-            const rgbaContext = rgbaCanvas.getContext('2d');
-
-            // Copia l'immagine nel nuovo canvas RGBA
-            rgbaContext.drawImage(canvas, 0, 0);
-
-            rgbaCanvas.toBlob(function (pngBlob) {
+            canvas.toBlob(function (pngBlob) {
                 selectedFileBlob = pngBlob;
                 selectedFileName = 'webcam-photo-rgba.png';
 
@@ -266,24 +257,6 @@
                 togglePreview(true);
                 stopWebcam();
             }, 'image/png');
-        });
-                    selectedFileBlob = pngBlob;
-                    selectedFileName = 'webcam-photo.png';
-
-                    const imgURL = URL.createObjectURL(pngBlob);
-                    document.getElementById('preview-img').src = imgURL;
-                    togglePreview(true);
-                    stopWebcam();
-                };
-                reader.readAsArrayBuffer(blob);
-                selectedFileBlob = blob;
-                selectedFileName = 'webcam-photo.png';
-
-                const imgURL = URL.createObjectURL(blob);
-                document.getElementById('preview-img').src = imgURL;
-                togglePreview(true);
-                stopWebcam();
-            });
         }
 
         // Funzione per interrompere la webcam e nascondere il flusso video
