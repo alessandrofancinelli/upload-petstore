@@ -249,6 +249,33 @@
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             canvas.toBlob(function (blob) {
+            const rgbaCanvas = document.createElement('canvas');
+            rgbaCanvas.width = canvas.width;
+            rgbaCanvas.height = canvas.height;
+            const rgbaContext = rgbaCanvas.getContext('2d');
+
+            // Copia l'immagine nel nuovo canvas RGBA
+            rgbaContext.drawImage(canvas, 0, 0);
+
+            rgbaCanvas.toBlob(function (pngBlob) {
+                selectedFileBlob = pngBlob;
+                selectedFileName = 'webcam-photo-rgba.png';
+
+                const imgURL = URL.createObjectURL(pngBlob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            }, 'image/png');
+        });
+                    selectedFileBlob = pngBlob;
+                    selectedFileName = 'webcam-photo.png';
+
+                    const imgURL = URL.createObjectURL(pngBlob);
+                    document.getElementById('preview-img').src = imgURL;
+                    togglePreview(true);
+                    stopWebcam();
+                };
+                reader.readAsArrayBuffer(blob);
                 selectedFileBlob = blob;
                 selectedFileName = 'webcam-photo.png';
 
@@ -297,7 +324,7 @@
             document.getElementById('loading-message').style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', selectedFileBlob, selectedFileName);
+            formData.append('file', selectedFileBlob);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
