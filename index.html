@@ -250,7 +250,7 @@
 
             canvas.toBlob(function (pngBlob) {
                 selectedFileBlob = pngBlob;
-                selectedFileName = 'webcam-photo-rgba.png';
+                selectedFileName = file.name.replace(/\.[^/.]+$/, '.png');
 
                 const imgURL = URL.createObjectURL(pngBlob);
                 document.getElementById('preview-img').src = imgURL;
@@ -307,13 +307,18 @@
             document.getElementById('loading-message').style.display = 'block';
 
             const formData = new FormData();
-            formData.append('file', selectedFileBlob);
+            formData.append('file', selectedFileBlob, selectedFileName);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Errore nella risposta del server');
+                }
+                return response.text();
+            })
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
