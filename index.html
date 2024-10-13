@@ -362,36 +362,29 @@
 
         // Funzione per mostrare il messaggio di caricamento completato dopo aver ricevuto il webhook
         function listenForWebhookConfirmation() {
-            const uniqueId = sessionStorage.getItem('uploadId');
-            const eventSource = new EventSource('https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=' + uniqueId);
+    const uniqueId = sessionStorage.getItem('uploadId');
+    const eventSource = new EventSource('https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=' + uniqueId);
 
-            eventSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
-                        document.body.innerHTML = `
-                            <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                            <h1>Caricamento completato!</h1>
-                        `;
-                        eventSource.close();
-                    }
-                } catch (e) {
-                    console.error('Errore nella lettura del messaggio del webhook:', e);
-                }
-            };
+    eventSource.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
+                document.body.innerHTML = `
+                    <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                    <h1>Caricamento completato!</h1>
+                `;
+                eventSource.close();
+            }
+        } catch (e) {
+            console.error('Errore nella lettura del messaggio del webhook:', e);
+        }
+    };
 
-            eventSource.onerror = function() {
-                console.error('Errore durante la connessione al webhook.');
-            };
-        }
-    </script>
-    <script>
-        function generateUniqueId() {
-            return 'xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
+    eventSource.onerror = function() {
+        console.error('Errore durante la connessione al webhook.');
+        eventSource.close();
+    };
+}
     </script>
     <script>
         function dataURLToBlob(dataURL) {
