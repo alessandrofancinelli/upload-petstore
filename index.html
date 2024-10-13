@@ -218,6 +218,8 @@
                 document.getElementById('upload-btn').style.display = 'none';
             }
         });
+            }
+        });
 
         // Bottone per aprire il file input (carica un file dalla galleria)
         document.getElementById('upload-btn').addEventListener('click', function (event) {
@@ -250,6 +252,8 @@
                 snapButton.style = "margin-top: 10px;";
                 snapButton.onclick = capturePhoto;
                 document.getElementById('photo-section').appendChild(snapButton);
+            }
+        }
             }
         }
 
@@ -364,6 +368,9 @@
             event.preventDefault();
             stopWebcam();
             togglePreview(false);
+            document.getElementById('client-info-form').style.display = 'block';
+            document.getElementById('photo-section').style.display = 'none';
+        });
         });
 
         // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
