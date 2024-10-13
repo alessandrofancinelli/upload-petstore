@@ -351,8 +351,11 @@
         function showCompletionMessage() {
             document.body.innerHTML = `
                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                <h1>Immagine Caricata!</h1>
+                <h1>Caricamento in corso...</h1>
             `;
+
+            // Avvia un listener per ricevere il webhook di conferma da Make.com
+            listenForWebhookConfirmation();
         }
 
         // Gestione dell'evento di prompt di installazione dell'app
@@ -383,5 +386,24 @@
         });
     </script>
 
+    <script>
+        function listenForWebhookConfirmation() {
+            const eventSource = new EventSource('https://alessandrofancinelli.github.io/upload-petstore/webhook-listen'); // Inserisci qui l'URL del server che riceve il webhook di conferma
+
+            eventSource.onmessage = function(event) {
+                if (event.data === 'upload_completed') {
+                    document.body.innerHTML = `
+                        <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                        <h1>Immagine Caricata!</h1>
+                    `;
+                    eventSource.close();
+                }
+            };
+
+            eventSource.onerror = function() {
+                console.error('Errore durante la connessione al webhook.');
+            };
+        }
+    </script>
 </body>
 </html>
