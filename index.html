@@ -168,6 +168,7 @@
         let videoStream = null;
         let installPromptEvent = null;
 
+        // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function(event) {
             console.log('Pulsante Invia Dati cliccato');
             event.preventDefault();
@@ -345,9 +346,11 @@
 
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
-            const eventSource = new EventSource(`https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=${uniqueId}`);
+            const sseUrl = `https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=${uniqueId}`;
+            console.log("Tentativo di connessione a:", sseUrl);  // Log dell'URL per verificare
 
-            // Log ogni messaggio ricevuto dal server
+            let eventSource = new EventSource(sseUrl);
+
             eventSource.onmessage = function(event) {
                 console.log('Evento ricevuto dal server:', event.data);
 
@@ -357,7 +360,7 @@
                         console.log('Upload completato per:', data.uploadId);
                         document.body.innerHTML = `
                             <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                            <h1>Caricamento completato!</h1>
+                            <h1>Immagine caricata!</h1>
                         `;
                         eventSource.close();
                     }
@@ -366,10 +369,12 @@
                 }
             };
 
-            // Log degli errori
             eventSource.onerror = function(err) {
                 console.error('Errore durante la connessione al webhook:', err);
                 eventSource.close();
+
+                // Riprova la connessione dopo 3 secondi in caso di errore
+                setTimeout(listenForWebhookConfirmation, 3000);
             };
         }
 
