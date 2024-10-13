@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scatta una Foto o Carica un File</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="v-icon.png">
     <meta name="theme-color" content="#d70000">
+    <link rel="icon" href="v-icon.png">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -22,7 +22,7 @@
             box-sizing: border-box;
         }
         #logo {
-            width: 150px;
+            width: 150px; 
             height: auto;
             margin-bottom: 20px;
         }
@@ -146,7 +146,7 @@
         <button id="upload-btn">Carica un File</button>
         <input type="file" id="file-input-snap" accept="image/*" capture="environment">
         <input type="file" id="file-input-upload" accept="image/*">
-        <video id="video" width="300" height="200" autoplay style="display: none;"></video>
+        <video id="video" width="300" height="200" autoplay style="display: none; border-radius: 8px;"></video>
         <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
@@ -165,8 +165,22 @@
     <div id="error-message"></div>
 
     <script>
+        let selectedFileBlob = null;
+        let selectedFileName = '';
         let videoStream = null;
-        let installPromptEvent = null;
+
+        // Genera un UUID e salvalo in sessionStorage se non esiste già
+        function generateUniqueId() {
+            return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Salva l'UUID nella sessione se non è già stato generato
+        if (!sessionStorage.getItem('userSessionId')) {
+            sessionStorage.setItem('userSessionId', generateUniqueId());
+        }
 
         // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function(event) {
@@ -193,7 +207,7 @@
         }
 
         // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
-        document.getElementById('snap').addEventListener('click', function(event) {
+        document.getElementById('snap').addEventListener('click', function (event) {
             event.preventDefault();
             if (isMobileDevice()) {
                 // Per i dispositivi mobili, apri la fotocamera
@@ -201,11 +215,7 @@
             } else {
                 // Per i desktop, chiedi il permesso per utilizzare la webcam
                 startWebcam();
-                // Nascondi i pulsanti di caricamento e lascia solo l'anteprima della webcam e il pulsante per scattare la foto
-                document.getElementById('snap').style.display = 'none';
-                document.getElementById('upload-btn').style.display = 'none';
             }
-            console.log('Pulsante Scatta Foto premuto, azione in corso');
         });
 
         // Bottone per aprire il file input (carica un file dalla galleria)
@@ -238,7 +248,7 @@
                 snapButton.id = 'capture-btn';
                 snapButton.style = "margin-top: 10px;";
                 snapButton.onclick = capturePhoto;
-                document.getElementById('photo-section').appendChild(snapButton);
+                document.body.appendChild(snapButton);
             }
         }
 
@@ -251,22 +261,15 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            canvas.toBlob(function(blob) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgData = e.target.result;
-                    const uniqueId = generateUniqueId();
-                    sessionStorage.setItem('selectedFileBlob', imgData);
-                    sessionStorage.setItem('selectedFileName', 'webcam-photo.png');
-                    sessionStorage.setItem('uploadId', uniqueId);
+            canvas.toBlob(function (blob) {
+                selectedFileBlob = blob;
+                selectedFileName = 'webcam-photo.png';
 
-                    const imgURL = URL.createObjectURL(blob);
-                    document.getElementById('preview-img').src = imgURL;
-                    togglePreview(true);
-                    stopWebcam();
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/png');
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            });
         }
 
         // Funzione per interrompere la webcam e nascondere il flusso video
@@ -290,20 +293,13 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgData = e.target.result;
-                    const uniqueId = generateUniqueId();
-                    sessionStorage.setItem('selectedFileBlob', imgData);
-                    sessionStorage.setItem('selectedFileName', file.name);
-                    sessionStorage.setItem('uploadId', uniqueId);
+                selectedFileBlob = file;
+                selectedFileName = file.name;
 
-                    const imgURL = URL.createObjectURL(file);
-                    document.getElementById('preview-img').src = imgURL;
-                    togglePreview(true);
-                    stopWebcam();
-                };
-                reader.readAsDataURL(file);
+                const imgURL = URL.createObjectURL(file);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
             }
         }
 
@@ -313,15 +309,9 @@
             document.getElementById('preview').style.display = 'none';
             document.getElementById('loading-message').style.display = 'block';
 
-            const imgData = sessionStorage.getItem('selectedFileBlob');
-            const fileName = sessionStorage.getItem('selectedFileName');
-            const uniqueId = sessionStorage.getItem('uploadId');
-
-            const blob = dataURLToBlob(imgData);
-
             const formData = new FormData();
-            formData.append('file', blob, fileName);
-            formData.append('uploadId', uniqueId);
+            formData.append('file', selectedFileBlob, selectedFileName);
+            formData.append('userSessionId', sessionStorage.getItem('userSessionId'));
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
@@ -331,6 +321,7 @@
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
+                showCompletionMessage();
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -341,13 +332,10 @@
         });
 
         // Scarta l'immagine e ripristina la schermata iniziale
-        document.getElementById('discard-upload').addEventListener('click', function(event) {
+        document.getElementById('discard-upload').addEventListener('click', function (event) {
             event.preventDefault();
             stopWebcam();
             togglePreview(false);
-            document.getElementById('client-info-form').style.display = 'block';
-            document.getElementById('photo-section').style.display = 'none';
-            console.log('Immagine scartata, ripristinato modulo cliente');
         });
 
         // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
@@ -359,89 +347,13 @@
         }
 
         // Funzione per mostrare il messaggio di caricamento completato
-        function showLoadingMessage() {
+        function showCompletionMessage() {
             document.body.innerHTML = `
                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                <h1>Caricamento in corso...</h1>
+                <h1>Caricamento completato!</h1>
             `;
-
-            // Avvia un listener per ricevere il webhook di conferma da Make.com
-            listenForWebhookConfirmation();
-        }
-
-        // Gestione dell'evento di prompt di installazione dell'app
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            installPromptEvent = e;
-
-            // Mostra il pulsante di installazione se non esiste già
-            if (!document.getElementById('install-app')) {
-                const installButton = document.createElement('button');
-                installButton.textContent = 'Installa l\'app';
-                installButton.id = 'install-app';
-                installButton.style = "margin-top: 10px;";
-                installButton.onclick = () => {
-                    installPromptEvent.prompt();
-                    installPromptEvent.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            installButton.remove();
-                        } else {
-                            console.log('User dismissed the install prompt');
-                        }
-                        installPromptEvent = null;
-                    });
-                };
-                document.body.appendChild(installButton);
-            }
-        });
-
-    </script>
-
-    <script>
-        function listenForWebhookConfirmation() {
-            const uniqueId = sessionStorage.getItem('uploadId');
-            const eventSource = new EventSource('https://alessandrofancinelli.github.io/upload-petstore/webhook-listen?uploadId=' + uniqueId);
-
-            eventSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
-                        document.body.innerHTML = `
-                            <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                            <h1>Caricamento completato!</h1>
-                        `;
-                        eventSource.close();
-                    }
-                } catch (e) {
-                    console.error('Errore nella lettura del messaggio del webhook:', e);
-                }
-            };
-
-            eventSource.onerror = function() {
-                console.error('Errore durante la connessione al webhook.');
-            };
         }
     </script>
-    <script>
-        function generateUniqueId() {
-            return 'xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-    </script>
-    <script>
-        function dataURLToBlob(dataURL) {
-            const byteString = atob(dataURL.split(',')[1]);
-            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            return new Blob([ab], { type: mimeString });
-        }
-    </script>
+
 </body>
 </html>
