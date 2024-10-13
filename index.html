@@ -331,6 +331,8 @@
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
+                // Attendi il webhook di conferma per mostrare il messaggio di caricamento completato
+                listenForWebhookConfirmation();
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -358,47 +360,7 @@
             document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
         }
 
-        // Funzione per mostrare il messaggio di caricamento completato
-        function showLoadingMessage() {
-            document.body.innerHTML = `
-                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                <h1>Caricamento in corso...</h1>
-            `;
-
-            // Avvia un listener per ricevere il webhook di conferma da Make.com
-            listenForWebhookConfirmation();
-        }
-
-        // Gestione dell'evento di prompt di installazione dell'app
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            installPromptEvent = e;
-
-            // Mostra il pulsante di installazione se non esiste già
-            if (!document.getElementById('install-app')) {
-                const installButton = document.createElement('button');
-                installButton.textContent = 'Installa l'app';
-                installButton.id = 'install-app';
-                installButton.style = "margin-top: 10px;";
-                installButton.onclick = () => {
-                    installPromptEvent.prompt();
-                    installPromptEvent.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            installButton.remove();
-                        } else {
-                            console.log('User dismissed the install prompt');
-                        }
-                        installPromptEvent = null;
-                    });
-                };
-                document.body.appendChild(installButton);
-            }
-        });
-
-    </script>
-
-    <script>
+        // Funzione per mostrare il messaggio di caricamento completato dopo aver ricevuto il webhook
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
             const eventSource = new EventSource('https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=' + uniqueId);
