@@ -168,7 +168,6 @@
         let videoStream = null;
         let installPromptEvent = null;
 
-        // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function(event) {
             console.log('Pulsante Invia Dati cliccato');
             event.preventDefault();
@@ -178,7 +177,6 @@
 
             if (name && email && privacyChecked) {
                 console.log('Tutti i campi sono stati compilati correttamente');
-                // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
                 document.getElementById('photo-section').style.display = 'block';
                 console.log('Modulo nascosto, visualizzazione sezione foto/caricamento');
@@ -187,34 +185,27 @@
             }
         });
 
-        // Rileva se il dispositivo è mobile o desktop
         function isMobileDevice() {
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
         }
 
-        // Gestisci il comportamento del pulsante Scatta Foto a seconda del dispositivo
         document.getElementById('snap').addEventListener('click', function(event) {
             event.preventDefault();
             if (isMobileDevice()) {
-                // Per i dispositivi mobili, apri la fotocamera
                 document.getElementById('file-input-snap').click();
             } else {
-                // Per i desktop, chiedi il permesso per utilizzare la webcam
                 startWebcam();
-                // Nascondi i pulsanti di caricamento e lascia solo l'anteprima della webcam e il pulsante per scattare la foto
                 document.getElementById('snap').style.display = 'none';
                 document.getElementById('upload-btn').style.display = 'none';
             }
             console.log('Pulsante Scatta Foto premuto, azione in corso');
         });
 
-        // Bottone per aprire il file input (carica un file dalla galleria)
         document.getElementById('upload-btn').addEventListener('click', function (event) {
             event.preventDefault();
             document.getElementById('file-input-upload').click();
         });
 
-        // Funzione per iniziare a usare la webcam
         function startWebcam() {
             const video = document.getElementById('video');
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -230,7 +221,6 @@
                 });
         }
 
-        // Crea il pulsante per scattare la foto (se non esiste già)
         function createCaptureButton() {
             if (!document.getElementById('capture-btn')) {
                 const snapButton = document.createElement('button');
@@ -242,7 +232,6 @@
             }
         }
 
-        // Funzione per catturare la foto dalla webcam
         function capturePhoto() {
             const canvas = document.getElementById('canvas');
             const video = document.getElementById('video');
@@ -269,7 +258,6 @@
             }, 'image/png');
         }
 
-        // Funzione per interrompere la webcam e nascondere il flusso video
         function stopWebcam() {
             const video = document.getElementById('video');
             if (videoStream) {
@@ -283,7 +271,6 @@
             }
         }
 
-        // Funzione per gestire il caricamento del file e mostrare l'anteprima
         document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
         document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
 
@@ -307,7 +294,6 @@
             }
         }
 
-        // Conferma il caricamento dell'immagine
         document.getElementById('confirm-upload').addEventListener('click', function (event) {
             event.preventDefault();
             document.getElementById('preview').style.display = 'none';
@@ -331,7 +317,6 @@
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
-                // Attendi il webhook di conferma per mostrare il messaggio di caricamento completato
                 listenForWebhookConfirmation();
             })
             .catch(error => {
@@ -342,7 +327,6 @@
             });
         });
 
-        // Scarta l'immagine e ripristina la schermata iniziale
         document.getElementById('discard-upload').addEventListener('click', function(event) {
             event.preventDefault();
             stopWebcam();
@@ -352,7 +336,6 @@
             console.log('Immagine scartata, ripristinato modulo cliente');
         });
 
-        // Funzione per mostrare/nascondere l'anteprima e i pulsanti di conferma
         function togglePreview(show) {
             document.getElementById('snap').style.display = show ? 'none' : 'block';
             document.getElementById('upload-btn').style.display = show ? 'none' : 'block';
@@ -360,15 +343,18 @@
             document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
         }
 
-        // Funzione per mostrare il messaggio di caricamento completato dopo aver ricevuto il webhook
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
             const eventSource = new EventSource(`https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=${uniqueId}`);
 
+            // Log ogni messaggio ricevuto dal server
             eventSource.onmessage = function(event) {
+                console.log('Evento ricevuto dal server:', event.data);
+
                 try {
                     const data = JSON.parse(event.data);
                     if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
+                        console.log('Upload completato per:', data.uploadId);
                         document.body.innerHTML = `
                             <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
                             <h1>Caricamento completato!</h1>
@@ -380,8 +366,9 @@
                 }
             };
 
-            eventSource.onerror = function() {
-                console.error('Errore durante la connessione al webhook.');
+            // Log degli errori
+            eventSource.onerror = function(err) {
+                console.error('Errore durante la connessione al webhook:', err);
                 eventSource.close();
             };
         }
