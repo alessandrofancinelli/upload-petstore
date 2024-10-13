@@ -126,7 +126,7 @@
     <h1 id="title">Scatta una Foto o Carica un File</h1>
 
     <!-- Modulo Dati Cliente -->
-    <form id="client-info-form" onsubmit="event.preventDefault();">
+    <form id="client-info-form">
         <label for="name">Nome:</label>
         <input type="text" id="name" name="name" required>
         
@@ -170,7 +170,8 @@
         let installPromptEvent = null;
 
         // Gestione del Modulo Dati Cliente
-        document.getElementById('submit-info').addEventListener('click', function() {
+        document.getElementById('submit-info').addEventListener('click', function(event) {
+            event.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const privacyChecked = document.getElementById('privacy-check').checked;
@@ -178,7 +179,15 @@
             if (name && email && privacyChecked) {
                 // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
-                document.getElementById('photo-section').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('photo-section').style.display = 'block';
+            } else {
+                alert('Per favore, compila tutti i campi e accetta la privacy policy.');
+            }
+        });
+            } else {
+                alert('Per favore, compila tutti i campi e accetta la privacy policy.');
+            }
+        });
                 document.getElementById('photo-section').style.display = 'flex';
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
