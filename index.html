@@ -159,14 +159,13 @@
     </div>
 
     <div id="loading-message">
-        <p>Caricamento in corso...</p>
+        <p>Immagine caricata!</p>
     </div>
 
     <div id="error-message"></div>
 
     <script>
-        let selectedFileBlob = null;
-        let selectedFileName = '';
+        
         let videoStream = null;
         let installPromptEvent = null;
 
@@ -248,15 +247,23 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            canvas.toBlob(function (pngBlob) {
-                selectedFileBlob = pngBlob;
-                selectedFileName = file.name.replace(/\.[^/.]+$/, '.png');
+            canvas.toBlob(function(blob) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    const uniqueId = generateUniqueId();
+                    sessionStorage.setItem('selectedFileBlob', imgData);
+                    sessionStorage.setItem('selectedFileName', 'webcam-photo.png');
+                    sessionStorage.setItem('uploadId', uniqueId);
 
-                const imgURL = URL.createObjectURL(pngBlob);
-                document.getElementById('preview-img').src = imgURL;
-                togglePreview(true);
-                stopWebcam();
-            }, 'image/png');
+                    const imgURL = URL.createObjectURL(blob);
+                    document.getElementById('preview-img').src = imgURL;
+                    togglePreview(true);
+                    stopWebcam();
+                };
+                reader.readAsDataURL(blob);
+            });
+        }, 'image/png');
         }
 
         // Funzione per interrompere la webcam e nascondere il flusso video
@@ -280,21 +287,22 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    context.drawImage(img, 0, 0);
-                    canvas.toBlob(function(pngBlob) {
-                        selectedFileBlob = pngBlob;
-                        selectedFileName = file.name.replace(/\.[^/.]+$/, '.png');
-                        const imgURL = URL.createObjectURL(pngBlob);
-                        document.getElementById('preview-img').src = imgURL;
-                        togglePreview(true);
-                        stopWebcam();
-                    }, 'image/png');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    const uniqueId = generateUniqueId();
+                    sessionStorage.setItem('selectedFileBlob', imgData);
+                    sessionStorage.setItem('selectedFileName', file.name);
+                    sessionStorage.setItem('uploadId', uniqueId);
+
+                    const imgURL = URL.createObjectURL(file);
+                    document.getElementById('preview-img').src = imgURL;
+                    togglePreview(true);
+                    stopWebcam();
+                };
+                reader.readAsDataURL(file);
+            }
+        }, 'image/png');
                 };
                 img.src = URL.createObjectURL(file);
             }
@@ -306,23 +314,24 @@
             document.getElementById('preview').style.display = 'none';
             document.getElementById('loading-message').style.display = 'block';
 
+            const imgData = sessionStorage.getItem('selectedFileBlob');
+            const fileName = sessionStorage.getItem('selectedFileName');
+            const uniqueId = sessionStorage.getItem('uploadId');
+
             const formData = new FormData();
-            formData.append('file', selectedFileBlob, selectedFileName);
+            formData.append('file', imgData);
+            formData.append('fileName', fileName);
+            formData.append('uploadId', uniqueId);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Errore nella risposta del server');
-                }
-                return response.text();
-            })
+            .then(response => response.text())
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
-                showLoadingMessage(); listenForWebhookConfirmation();
+                showLoadingMessage();
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -330,6 +339,7 @@
                 stopWebcam();
                 togglePreview(false);
             });
+        });
         });
 
         // Scarta l'immagine e ripristina la schermata iniziale
@@ -351,7 +361,7 @@
         function showLoadingMessage() {
             document.body.innerHTML = `
                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                <h1>Immagine caricata!</h1>
+                <h1>Caricamento in corso...</h1>
             `;
 
             // Avvia un listener per ricevere il webhook di conferma da Make.com
@@ -388,12 +398,13 @@
 
     <script>
         function listenForWebhookConfirmation() {
-            const eventSource = new EventSource('https://alessandrofancinelli.github.io/upload-petstore/webhook-listen'); // Inserisci qui l'URL del server che riceve il webhook di conferma
+            const uniqueId = sessionStorage.getItem('uploadId');
+            const eventSource = new EventSource('https://alessandrofancinelli.github.io/upload-petstore/webhook-listen?uploadId=' + uniqueId);
 
             eventSource.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.status === 'upload_completed') {
+                    if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
                         document.body.innerHTML = `
                             <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
                             <h1>Caricamento completato!</h1>
@@ -404,10 +415,19 @@
                     console.error('Errore nella lettura del messaggio del webhook:', e);
                 }
             };
+        }
 
             eventSource.onerror = function() {
                 console.error('Errore durante la connessione al webhook.');
             };
+        }
+    </script>
+    <script>
+        function generateUniqueId() {
+            return 'xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
         }
     </script>
 </body>
