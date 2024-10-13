@@ -322,7 +322,7 @@
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
-                showLoadingMessage();
+                showLoadingMessage(); listenForWebhookConfirmation();
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -389,25 +389,6 @@
     <script>
         function listenForWebhookConfirmation() {
             const eventSource = new EventSource('https://alessandrofancinelli.github.io/upload-petstore/webhook-listen'); // Inserisci qui l'URL del server che riceve il webhook di conferma
-
-            eventSource.onmessage = function(event) {
-                if (event.data === 'upload_completed') {
-                    document.body.innerHTML = `
-                        <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                        <h1>Immagine Caricata!</h1>
-                    `;
-                    eventSource.close();
-                }
-            };
-
-            eventSource.onerror = function() {
-                console.error('Errore durante la connessione al webhook.');
-            };
-        }
-    </script>
-    <script>
-        function listenForWebhookConfirmation() {
-            const eventSource = new EventSource('https://your-server.com/webhook-listen'); // Inserisci qui l'URL del server che riceve il webhook di conferma
 
             eventSource.onmessage = function(event) {
                 if (event.data === 'upload_completed') {
