@@ -126,7 +126,7 @@
     <h1 id="title">Scatta una Foto o Carica un File</h1>
 
     <!-- Modulo Dati Cliente -->
-    <form id="client-info-form" onsubmit="return false;">
+    <form id="client-info-form" onsubmit="event.preventDefault();">
         <label for="name">Nome:</label>
         <input type="text" id="name" name="name" required>
         
@@ -179,6 +179,11 @@
                 // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
                 document.getElementById('photo-section').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('photo-section').style.display = 'flex';
+            } else {
+                alert('Per favore, compila tutti i campi e accetta la privacy policy.');
+            }
+        });
                 document.getElementById('photo-section').style.display = 'flex';
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
