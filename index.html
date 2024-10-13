@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scatta una Foto o Carica un File</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="v-icon.png">
     <meta name="theme-color" content="#d70000">
@@ -170,6 +170,7 @@
         let installPromptEvent = null;
 
         // Gestione del Modulo Dati Cliente
+        
         document.getElementById('submit-info').addEventListener('click', function(event) {
             console.log('Pulsante Invia Dati cliccato');
             event.preventDefault();
@@ -181,9 +182,8 @@
                 console.log('Tutti i campi sono stati compilati correttamente');
                 // Nascondi il modulo e mostra la sezione per foto/caricamento
                 document.getElementById('client-info-form').style.display = 'none';
-                console.log('Modulo nascosto, visualizzazione sezione foto/caricamento');
                 document.getElementById('photo-section').style.display = 'block';
-                console.log('Sezione foto/caricamento visualizzata');
+                console.log('Modulo nascosto, visualizzazione sezione foto/caricamento');
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
             }
