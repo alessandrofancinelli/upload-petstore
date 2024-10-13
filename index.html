@@ -344,6 +344,7 @@
             document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
         }
 
+        // Funzione che ascolta la conferma del Webhook
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
             const sseUrl = `https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=${uniqueId}`;
@@ -358,10 +359,22 @@
                     const data = JSON.parse(event.data);
                     if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
                         console.log('Upload completato per:', data.uploadId);
-                        document.body.innerHTML = `
-                            <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                            <h1>Immagine caricata!</h1>
-                        `;
+                        
+                        // Verifica se l'immagine rispetta le linee guida
+                        if (data.validation === "si") {
+                            // Immagine accettata, rispetta le linee guida
+                            document.body.innerHTML = `
+                                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                                <h1>Immagine caricata!</h1>
+                            `;
+                        } else {
+                            // Immagine non accettata, non rispetta le linee guida
+                            document.body.innerHTML = `
+                                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
+                                <h1>L'immagine non rispetta le linee guida.</h1>
+                            `;
+                        }
+                        
                         eventSource.close();
                     }
                 } catch (e) {
