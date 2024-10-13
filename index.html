@@ -318,9 +318,10 @@
             const fileName = sessionStorage.getItem('selectedFileName');
             const uniqueId = sessionStorage.getItem('uploadId');
 
+            const blob = dataURLToBlob(imgData);
+
             const formData = new FormData();
-            formData.append('file', imgData);
-            formData.append('fileName', fileName);
+            formData.append('file', blob, fileName);
             formData.append('uploadId', uniqueId);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
@@ -339,6 +340,7 @@
                 stopWebcam();
                 togglePreview(false);
             });
+        });
         });
         });
 
@@ -428,6 +430,18 @@
                 const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
+        }
+    </script>
+    <script>
+        function dataURLToBlob(dataURL) {
+            const byteString = atob(dataURL.split(',')[1]);
+            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
         }
     </script>
 </body>
