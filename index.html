@@ -234,7 +234,7 @@
         function createCaptureButton() {
             if (!document.getElementById('capture-btn')) {
                 const snapButton = document.createElement('button');
-                snapButton.textContent = 'Scatta Foto';
+                snapButton.textContent = 'Cattura';
                 snapButton.id = 'capture-btn';
                 snapButton.style = "margin-top: 10px;";
                 snapButton.onclick = capturePhoto;
@@ -331,7 +331,6 @@
             .then(data => {
                 console.log('Successo:', data);
                 stopWebcam();
-                showLoadingMessage();
             })
             .catch(error => {
                 console.error('Errore:', error);
@@ -363,7 +362,7 @@
         function showLoadingMessage() {
             document.body.innerHTML = `
                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                <h1>Immagine caricata!</h1>
+                <h1>Caricamento in corso...</h1>
             `;
 
             // Avvia un listener per ricevere il webhook di conferma da Make.com
