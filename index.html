@@ -181,6 +181,13 @@
     </div>
 
     <div id="error-message"></div>
+    <div id="error-section" style="display: none;">
+        <h1 class="error-message">L'immagine non rispetta le linee guida.</h1>
+        <div class="error-buttons">
+            <button id="retry-snap">Scatta Foto</button>
+            <button id="retry-upload">Carica un File</button>
+        </div>
+    </div>
 
     <script>
         let videoStream = null;
@@ -188,17 +195,14 @@
 
         // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function(event) {
-            console.log('Pulsante Invia Dati cliccato');
             event.preventDefault();
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const privacyChecked = document.getElementById('privacy-check').checked;
 
             if (name && email && privacyChecked) {
-                console.log('Tutti i campi sono stati compilati correttamente');
                 document.getElementById('client-info-form').style.display = 'none';
                 document.getElementById('photo-section').style.display = 'block';
-                console.log('Modulo nascosto, visualizzazione sezione foto/caricamento');
             } else {
                 alert('Per favore, compila tutti i campi e accetta la privacy policy.');
             }
@@ -217,7 +221,6 @@
                 document.getElementById('snap').style.display = 'none';
                 document.getElementById('upload-btn').style.display = 'none';
             }
-            console.log('Pulsante Scatta Foto premuto, azione in corso');
         });
 
         document.getElementById('upload-btn').addEventListener('click', function (event) {
@@ -329,8 +332,8 @@
             const formData = new FormData();
             formData.append('file', blob, fileName);
             formData.append('uploadId', uniqueId);
-            formData.append('name', name);  // Invia anche il nome
-            formData.append('email', email);  // Invia anche l'email
+            formData.append('name', name);
+            formData.append('email', email);
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
@@ -338,7 +341,6 @@
             })
             .then(response => response.text())
             .then(data => {
-                console.log('Successo:', data);
                 stopWebcam();
                 listenForWebhookConfirmation();
             })
@@ -356,7 +358,6 @@
             togglePreview(false);
             document.getElementById('client-info-form').style.display = 'block';
             document.getElementById('photo-section').style.display = 'none';
-            console.log('Immagine scartata, ripristinato modulo cliente');
         });
 
         function togglePreview(show) {
@@ -370,48 +371,38 @@
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
             const sseUrl = `https://testvisiospot-88bc93742898.herokuapp.com/webhook-listen?uploadId=${uniqueId}`;
-            console.log("Tentativo di connessione a:", sseUrl);  // Log dell'URL per verificare
 
             let eventSource = new EventSource(sseUrl);
 
             eventSource.onmessage = function(event) {
-                console.log('Evento ricevuto dal server:', event.data);
-
                 try {
                     const data = JSON.parse(event.data);
                     if (data.status === 'upload_completed' && data.uploadId === uniqueId) {
-                        console.log('Upload completato per:', data.uploadId);
-                        
-                        // Verifica se l'immagine rispetta le linee guida
                         if (data.validation === "si") {
-                            // Immagine accettata, rispetta le linee guida
+                            // Immagine accettata
+                            document.getElementById('loading-message').style.display = 'none';
                             document.body.innerHTML = `
                                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
                                 <h1>Immagine caricata!</h1>
                             `;
                         } else {
-                            // Immagine non accettata, non rispetta le linee guida
-                            document.body.innerHTML = `
-                                <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                                <h1 class="error-message">L'immagine non rispetta le linee guida.</h1>
-                                <div class="error-buttons">
-                                    <button id="retry-snap">Scatta Foto</button>
-                                    <button id="retry-upload">Carica un File</button>
-                                </div>
-                            `;
-                            
-                            // Collega i pulsanti alla stessa logica dei pulsanti originali
+                            // Immagine non accettata
+                            document.getElementById('loading-message').style.display = 'none';
+                            document.getElementById('error-section').style.display = 'block';
+
                             document.getElementById('retry-snap').addEventListener('click', function() {
+                                document.getElementById('error-section').style.display = 'none';
                                 document.getElementById('photo-section').style.display = 'block';
-                                startWebcam(); // Richiama la funzione per scattare la foto
+                                startWebcam();
                             });
 
                             document.getElementById('retry-upload').addEventListener('click', function() {
+                                document.getElementById('error-section').style.display = 'none';
                                 document.getElementById('photo-section').style.display = 'block';
-                                document.getElementById('file-input-upload').click();  // Avvia caricamento file
+                                document.getElementById('file-input-upload').click();
                             });
                         }
-                        
+
                         eventSource.close();
                     }
                 } catch (e) {
