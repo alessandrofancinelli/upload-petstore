@@ -318,6 +318,15 @@
 
         document.getElementById('confirm-upload').addEventListener('click', function (event) {
             event.preventDefault();
+            uploadImage();
+        });
+
+        document.getElementById('discard-upload').addEventListener('click', function(event) {
+            event.preventDefault();
+            resetForm();
+        });
+
+        function uploadImage() {
             document.getElementById('preview').style.display = 'none';
             document.getElementById('loading-message').style.display = 'block';
 
@@ -350,15 +359,14 @@
                 stopWebcam();
                 togglePreview(false);
             });
-        });
+        }
 
-        document.getElementById('discard-upload').addEventListener('click', function(event) {
-            event.preventDefault();
+        function resetForm() {
             stopWebcam();
             togglePreview(false);
             document.getElementById('client-info-form').style.display = 'block';
             document.getElementById('photo-section').style.display = 'none';
-        });
+        }
 
         function togglePreview(show) {
             document.getElementById('snap').style.display = show ? 'none' : 'block';
