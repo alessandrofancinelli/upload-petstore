@@ -400,17 +400,19 @@
                                 </div>
                             `;
                             
-                            // Funzionalità per far ripartire il processo
+                            // Riassegna gli event listener per i pulsanti
                             document.getElementById('retry-snap').addEventListener('click', () => {
                                 document.getElementById('client-info-form').style.display = 'none';
                                 document.getElementById('photo-section').style.display = 'block';
-                                document.getElementById('snap').click();  // Simula il clic per scattare una foto
+                                // Simula il clic per scattare una foto
+                                document.getElementById('snap').click();
                             });
 
                             document.getElementById('retry-upload').addEventListener('click', () => {
                                 document.getElementById('client-info-form').style.display = 'none';
                                 document.getElementById('photo-section').style.display = 'block';
-                                document.getElementById('upload-btn').click();  // Simula il clic per caricare un file
+                                // Simula il clic per caricare un file
+                                document.getElementById('upload-btn').click();
                             });
                         }
                         
