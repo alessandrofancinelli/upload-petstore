@@ -263,21 +263,25 @@
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             canvas.toBlob(function(blob) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgData = e.target.result;
-                    const uniqueId = generateUniqueId();
-                    sessionStorage.setItem('selectedFileBlob', imgData);
-                    sessionStorage.setItem('selectedFileName', 'webcam-photo.png');
-                    sessionStorage.setItem('uploadId', uniqueId);
-
-                    const imgURL = URL.createObjectURL(blob);
-                    document.getElementById('preview-img').src = imgURL;
-                    togglePreview(true);
-                    stopWebcam();
-                };
-                reader.readAsDataURL(blob);
+                handleCapturedImage(blob, 'webcam-photo.png');
             }, 'image/png');
+        }
+
+        function handleCapturedImage(blob, fileName) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgData = e.target.result;
+                const uniqueId = generateUniqueId();
+                sessionStorage.setItem('selectedFileBlob', imgData);
+                sessionStorage.setItem('selectedFileName', fileName);
+                sessionStorage.setItem('uploadId', uniqueId);
+
+                const imgURL = URL.createObjectURL(blob);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            };
+            reader.readAsDataURL(blob);
         }
 
         function stopWebcam() {
@@ -293,27 +297,35 @@
             }
         }
 
-        document.getElementById('file-input-snap').addEventListener('change', handleFileSelect);
-        document.getElementById('file-input-upload').addEventListener('change', handleFileSelect);
-
-        function handleFileSelect(event) {
+        document.getElementById('file-input-snap').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgData = e.target.result;
-                    const uniqueId = generateUniqueId();
-                    sessionStorage.setItem('selectedFileBlob', imgData);
-                    sessionStorage.setItem('selectedFileName', file.name);
-                    sessionStorage.setItem('uploadId', uniqueId);
-
-                    const imgURL = URL.createObjectURL(file);
-                    document.getElementById('preview-img').src = imgURL;
-                    togglePreview(true);
-                    stopWebcam();
-                };
-                reader.readAsDataURL(file);
+                handleFileSelect(file);
             }
+        });
+
+        document.getElementById('file-input-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFileSelect(file);
+            }
+        });
+
+        function handleFileSelect(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgData = e.target.result;
+                const uniqueId = generateUniqueId();
+                sessionStorage.setItem('selectedFileBlob', imgData);
+                sessionStorage.setItem('selectedFileName', file.name);
+                sessionStorage.setItem('uploadId', uniqueId);
+
+                const imgURL = URL.createObjectURL(file);
+                document.getElementById('preview-img').src = imgURL;
+                togglePreview(true);
+                stopWebcam();
+            };
+            reader.readAsDataURL(file);
         }
 
         document.getElementById('confirm-upload').addEventListener('click', function (event) {
@@ -397,20 +409,7 @@
                             // Immagine non accettata
                             document.getElementById('loading-message').style.display = 'none';
                             document.getElementById('error-section').style.display = 'block';
-
-                            document.getElementById('retry-snap').addEventListener('click', function() {
-                                document.getElementById('error-section').style.display = 'none';
-                                document.getElementById('photo-section').style.display = 'block';
-                                startWebcam();
-                            });
-
-                            document.getElementById('retry-upload').addEventListener('click', function() {
-                                document.getElementById('error-section').style.display = 'none';
-                                document.getElementById('photo-section').style.display = 'block';
-                                document.getElementById('file-input-upload').click();
-                            });
                         }
-
                         eventSource.close();
                     }
                 } catch (e) {
