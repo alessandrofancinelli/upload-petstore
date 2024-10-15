@@ -300,6 +300,8 @@
             const file = event.target.files[0];
             if (file) {
                 handleFileSelect(file);
+            } else {
+                showRetryButtons();
             }
         });
 
@@ -307,6 +309,8 @@
             const file = event.target.files[0];
             if (file) {
                 handleFileSelect(file);
+            } else {
+                showRetryButtons();
             }
         });
 
@@ -386,6 +390,11 @@
             document.getElementById('confirm-buttons').style.display = show ? 'block' : 'none';
         }
 
+        function showRetryButtons() {
+            document.getElementById('error-section').style.display = 'block';
+            document.getElementById('photo-section').style.display = 'none';
+        }
+
         // Funzione che ascolta la conferma del Webhook
         function listenForWebhookConfirmation() {
             const uniqueId = sessionStorage.getItem('uploadId');
@@ -407,7 +416,7 @@
                         } else {
                             // Immagine non accettata
                             document.getElementById('loading-message').style.display = 'none';
-                            document.getElementById('error-section').style.display = 'block';
+                            showRetryButtons();
                         }
                         eventSource.close();
                     }
