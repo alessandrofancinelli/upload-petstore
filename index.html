@@ -400,19 +400,15 @@
                                 </div>
                             `;
                             
-                            // Riassegna gli event listener per i pulsanti
-                            document.getElementById('retry-snap').addEventListener('click', () => {
-                                document.getElementById('client-info-form').style.display = 'none';
+                            // Collega i pulsanti alla stessa logica dei pulsanti originali
+                            document.getElementById('retry-snap').addEventListener('click', function() {
                                 document.getElementById('photo-section').style.display = 'block';
-                                // Simula il clic per scattare una foto
-                                document.getElementById('snap').click();
+                                startWebcam(); // Richiama la funzione per scattare la foto
                             });
 
-                            document.getElementById('retry-upload').addEventListener('click', () => {
-                                document.getElementById('client-info-form').style.display = 'none';
+                            document.getElementById('retry-upload').addEventListener('click', function() {
                                 document.getElementById('photo-section').style.display = 'block';
-                                // Simula il clic per caricare un file
-                                document.getElementById('upload-btn').click();
+                                document.getElementById('file-input-upload').click();  // Avvia caricamento file
                             });
                         }
                         
