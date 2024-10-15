@@ -116,6 +116,24 @@
             color: red;
             margin-top: 15px;
         }
+
+        /* Stile del messaggio di errore per immagine non valida */
+        .error-message {
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .error-buttons button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -303,12 +321,16 @@
             const imgData = sessionStorage.getItem('selectedFileBlob');
             const fileName = sessionStorage.getItem('selectedFileName');
             const uniqueId = sessionStorage.getItem('uploadId');
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
 
             const blob = dataURLToBlob(imgData);
 
             const formData = new FormData();
             formData.append('file', blob, fileName);
             formData.append('uploadId', uniqueId);
+            formData.append('name', name);  // Invia anche il nome
+            formData.append('email', email);  // Invia anche l'email
 
             fetch('https://hook.eu2.make.com/8a5u2ko4cpxb4spq203ukftl4o88v3u9', {
                 method: 'POST',
@@ -371,8 +393,25 @@
                             // Immagine non accettata, non rispetta le linee guida
                             document.body.innerHTML = `
                                 <img id="logo" src="./logo_marchioREG_2022_grigio.png" alt="VisioSpot Logo">
-                                <h1>L'immagine non rispetta le linee guida.</h1>
+                                <h1 class="error-message">L'immagine non rispetta le linee guida.</h1>
+                                <div class="error-buttons">
+                                    <button id="retry-snap">Scatta Foto</button>
+                                    <button id="retry-upload">Carica un File</button>
+                                </div>
                             `;
+                            
+                            // Funzionalità per far ripartire il processo
+                            document.getElementById('retry-snap').addEventListener('click', () => {
+                                document.getElementById('client-info-form').style.display = 'none';
+                                document.getElementById('photo-section').style.display = 'block';
+                                document.getElementById('snap').click();  // Simula il clic per scattare una foto
+                            });
+
+                            document.getElementById('retry-upload').addEventListener('click', () => {
+                                document.getElementById('client-info-form').style.display = 'none';
+                                document.getElementById('photo-section').style.display = 'block';
+                                document.getElementById('upload-btn').click();  // Simula il clic per caricare un file
+                            });
                         }
                         
                         eventSource.close();
