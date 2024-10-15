@@ -191,7 +191,6 @@
 
     <script>
         let videoStream = null;
-        let installPromptEvent = null;
 
         // Gestione del Modulo Dati Cliente
         document.getElementById('submit-info').addEventListener('click', function(event) {
@@ -443,6 +442,24 @@
             }
             return new Blob([ab], { type: mimeString });
         }
+
+        // Gestione dei pulsanti di errore
+        document.getElementById('retry-snap').addEventListener('click', function() {
+            document.getElementById('error-section').style.display = 'none';
+            document.getElementById('photo-section').style.display = 'block';
+            if (isMobileDevice()) {
+                document.getElementById('file-input-snap').click();
+            } else {
+                startWebcam();
+            }
+        });
+
+        document.getElementById('retry-upload').addEventListener('click', function() {
+            document.getElementById('error-section').style.display = 'none';
+            document.getElementById('photo-section').style.display = 'block';
+            document.getElementById('file-input-upload').click();
+        });
+
     </script>
 </body>
 </html>
